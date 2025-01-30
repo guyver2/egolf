@@ -13,6 +13,87 @@
 export type TerrainSymbol = 'g' | 'f' | 's' | 't' | 'w' | 'u' | 'd' | 'l' | 'r' | 'b' | 'h';
 
 
+export class Terrain {
+    map: TerrainSymbol[][];
+    seed: string;
+    ballPosition: [number, number];
+    holePosition: [number, number];
+    width: number;
+    height: number;
+
+    constructor(seed: string, width: number, height: number) {
+        this.width = width;
+        this.height = height;
+        this.map = generateTerrain(seed, width, height);
+        this.seed = seed;
+        this.ballPosition = this.findBallPosition();
+        this.holePosition = this.findHolePosition();
+        console.log(`ballPosition: ${this.ballPosition}`);
+        console.log(`holePosition: ${this.holePosition}`);
+        this.setNeighboursToFairway(this.ballPosition);
+        this.setNeighboursToFairway(this.holePosition);
+    }
+
+    // Helper to set neighbours to fairway
+    setNeighboursToFairway(pos: [number, number]) {
+        for (let dy = -1; dy <= 1; dy++) {
+            for (let dx = -1; dx <= 1; dx++) {
+                const x = pos[0] + dx;
+                const y = pos[1] + dy;
+                // Skip if out of bounds or is the center tile
+                if (x >= 0 && x < this.width && y >= 0 && y < this.height && !(dx === 0 && dy === 0)) {
+                    this.map[y][x] = 'f';
+                }
+            }
+        }
+    }
+
+    findBallPosition(): [number, number] {
+        let ballPlaced = false;
+        for (let attempts = 0; attempts < 100 && !ballPlaced; attempts++) {
+            const startX = randInt(0, this.width - 1);
+            for (let y = this.height - 1; y >= Math.floor(3*this.height/4); y--) {
+                if (this.map[y][startX] === 'f') {
+                    this.map[y][startX] = 'b';
+                    ballPlaced = true;
+                    this.ballPosition = [startX, y];
+                    break;
+                }
+            }
+        }
+        if (!ballPlaced) {
+            // Fallback: if we never found a fairway in bottom quarter,
+            // just place ball in bottom-left corner forcibly
+            this.map[this.height - 2][1] = 'b';
+            this.ballPosition = [1, this.height - 2];
+        }
+        return this.ballPosition;
+    }
+
+    findHolePosition(): [number, number] {
+        let holePlaced = false;
+        for (let attempts = 0; attempts < 100 && !holePlaced; attempts++) {
+            const startX = randInt(0, this.width - 1);
+            for (let y = 0; y < Math.floor(this.height/4); y++) {
+                if (this.map[y][startX] === 'f') {
+                    this.map[y][startX] = 'h';
+                    holePlaced = true;
+                    this.holePosition = [startX, y];
+                    break;
+                }
+            }
+        }
+        if (!holePlaced) {
+            // Fallback: if we never found a fairway in top quarter,
+            // just place hole in top-right corner forcibly
+            this.map[1][this.width - 2] = 'h';
+            this.holePosition = [this.width - 2, 1];
+        }
+        return this.holePosition;
+    }
+}
+
+
 function inBounds(x: number, y: number, W: number, H: number) {
   return x >= 0 && x < W && y >= 0 && y < H;
 }
@@ -89,10 +170,6 @@ function erode(terrain: TerrainSymbol[][], type: TerrainSymbol): TerrainSymbol[]
             if (Math.random() < 0.4) stack.push([x + 1, y - 1]);
             if (Math.random() < 0.4) stack.push([x - 1, y - 1]);
         }
-        // if (Math.random() < 0.4) stack.push([x + 1, y + 1]);
-        // if (Math.random() < 0.4) stack.push([x - 1, y + 1]);
-        // if (Math.random() < 0.4) stack.push([x + 1, y - 1]);
-        // if (Math.random() < 0.4) stack.push([x - 1, y - 1]);
         // Randomize the order of items in the stack to create more organic shapes
         for (let i = stack.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
@@ -117,19 +194,32 @@ function erode(terrain: TerrainSymbol[][], type: TerrainSymbol): TerrainSymbol[]
   }
 
 
+function stringToUniqueNumber(str: string): number {
+    let hash = 0;
+    if (str.length === 0) return hash;
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = (hash << 5) - hash + char; // dummy hashing algorithm
+        hash = hash & hash; // Convert to 32-bit integer
+    }
+    return Math.abs(hash); // Ensure a positive number
+}
+
 /**
  * Returns a 2D array (height H, width W) of TerrainSymbol
  */
-export function generateTerrain(W: number, H: number): TerrainSymbol[][] {
+export function generateTerrain(seed: string, W: number, H: number): TerrainSymbol[][] {
     // Set random seed for deterministic generation
-    // Math.random = (() => {
-    //     let seed = 12346; // Fixed seed for consistent results
-    //     return () => {
-    //         seed = (seed * 16807) % 2147483647;
-    //         return (seed - 1) / 2147483646;
-    //     };
-    // })();
-    // 1) Create a 2D array filled with 'g' (grass) by default
+    Math.random = (() => {
+        let numSeed = stringToUniqueNumber(seed);
+        console.log(`numSeed: ${numSeed}`);
+        return () => {
+            numSeed = (numSeed * 16807) % 2147483647;
+            return (numSeed - 1) / 2147483646;
+        };
+    })();
+
+// 1) Create a 2D array filled with 'g' (grass) by default
   let terrain: TerrainSymbol[][] = [];
   for (let y = 0; y < H; y++) {
     terrain[y] = [];
@@ -137,10 +227,6 @@ export function generateTerrain(W: number, H: number): TerrainSymbol[][] {
       terrain[y][x] = 'g';
     }
   }
-
-
-  
-  
 
   // 2) Paint a few random fairway "blobs". We'll ensure top and bottom each get at least one.
   //    Start with top quarter:
@@ -170,88 +256,6 @@ export function generateTerrain(W: number, H: number): TerrainSymbol[][] {
     const terrainType: TerrainSymbol = r < 0.33 ? 's' : r < 0.66 ? 't' : 'w';
     terrain = paintBlob(terrain, x, y, randInt(10, 20), terrainType);
   }
-
-//   // 4) Add a handful of slope tiles on top of rough or fairway.
-//   //    We'll just randomly pick directions.
-//   const slopeSymbols: TerrainSymbol[] = ['u', 'd', 'l', 'r'];
-//   for (let i = 0; i < 6; i++) {
-//     const x = randInt(0, W - 1);
-//     const y = randInt(0, H - 1);
-//     // Make sure not to overwrite trees or sand so often
-//     if (terrain[y][x] === 'g' || terrain[y][x] === 'f') {
-//       terrain[y][x] = slopeSymbols[randInt(0, slopeSymbols.length - 1)];
-//     }
-//   }
-
-  // 5) Place the ball (b) in the bottom quarter, on a fairway tile.
-  //    We'll search downward from some random X until we find an 'f'.
-  let ballPlaced = false;
-  for (let attempts = 0; attempts < 100 && !ballPlaced; attempts++) {
-    const startX = randInt(0, W - 1);
-    for (let y = H - 1; y >= Math.floor(3*H/4); y--) {
-      if (terrain[y][startX] === 'f') {
-        terrain[y][startX] = 'b';
-        ballPlaced = true;
-        break;
-      }
-    }
-  }
-  if (!ballPlaced) {
-    // Fallback: if we never found a fairway in bottom quarter,
-    // just place ball in bottom-left corner forcibly
-    terrain[H - 1][0] = 'b';
-  }
-
-  // 6) Place the hole (h) in the top quarter, on a fairway tile.
-  let holePlaced = false;
-  for (let attempts = 0; attempts < 100 && !holePlaced; attempts++) {
-    const startX = randInt(0, W - 1);
-    for (let y = 0; y < Math.floor(H/4); y++) {
-      if (terrain[y][startX] === 'f') {
-        terrain[y][startX] = 'h';
-        holePlaced = true;
-        break;
-      }
-    }
-  }
-  if (!holePlaced) {
-    // Fallback: if we never found a fairway in top quarter,
-    // just place hole in top-left
-    terrain[0][0] = 'h';
-  }
-
-  // 7) Ensure the 8 neighbours around ball and hole are fairway
-  //    First find ball and hole positions
-  let ballX = -1, ballY = -1, holeX = -1, holeY = -1;
-  for (let y = 0; y < H; y++) {
-    for (let x = 0; x < W; x++) {
-      if (terrain[y][x] === 'b') {
-        ballX = x;
-        ballY = y;
-      } else if (terrain[y][x] === 'h') {
-        holeX = x;
-        holeY = y;
-      }
-    }
-  }
-
-  // Helper to set neighbours to fairway
-  const setNeighboursToFairway = (centerX: number, centerY: number) => {
-    for (let dy = -1; dy <= 1; dy++) {
-      for (let dx = -1; dx <= 1; dx++) {
-        const x = centerX + dx;
-        const y = centerY + dy;
-        // Skip if out of bounds or is the center tile
-        if (x >= 0 && x < W && y >= 0 && y < H && !(dx === 0 && dy === 0)) {
-          terrain[y][x] = 'f';
-        }
-      }
-    }
-  };
-
-  // Set neighbours for both ball and hole
-  setNeighboursToFairway(ballX, ballY);
-  setNeighboursToFairway(holeX, holeY);
 
   return terrain;
 }

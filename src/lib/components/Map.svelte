@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { type TerrainSymbol } from '$lib/map';
-  export let terrain: TerrainSymbol[][];
+  import { type TerrainSymbol, Terrain } from '$lib/map';
+  export let terrain: Terrain;
+  let seed = "not00set";
 
   // Map terrain types to colors
   const terrainColors: Record<TerrainSymbol, string> = {
@@ -24,10 +25,10 @@
     const radius = 2;
 
     // Check all adjacent tiles (including diagonals)
-    const hasTop = row > 0 && terrain[row-1][col] === currentTile;
-    const hasBottom = row < terrain.length-1 && terrain[row+1][col] === currentTile;
-    const hasLeft = col > 0 && terrain[row][col-1] === currentTile;
-    const hasRight = col < terrain[row].length-1 && terrain[row][col+1] === currentTile;
+    const hasTop = row > 0 && terrain.map[row-1][col] === currentTile;
+    const hasBottom = row < terrain.height-1 && terrain.map[row+1][col] === currentTile;
+    const hasLeft = col > 0 && terrain.map[row][col-1] === currentTile;
+    const hasRight = col < terrain.width-1 && terrain.map[row][col+1] === currentTile;
     
     // Top-left corner
     if (!hasTop && !hasLeft) corners.tl = radius;
@@ -43,7 +44,7 @@
 </script>
 
 <div class="map">
-  {#each terrain as row, rowIndex}
+  {#each terrain.map as row, rowIndex}
     <div class="row">
       {#each row as tile, colIndex}
         {@const corners = getCornerRadii(rowIndex, colIndex, tile)}

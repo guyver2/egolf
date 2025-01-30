@@ -1,0 +1,93 @@
+<script lang="ts">
+  let diceResult: number | null = 6;
+  let isRolling = false;
+  
+  async function rollD6() {
+    isRolling = true;
+    // Animate through different numbers before settling
+    for (let i = 0; i < 10; i++) {
+      diceResult = Math.floor(Math.random() * 6) + 1;
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    // Final result
+    diceResult = Math.floor(Math.random() * 6) + 1;
+    isRolling = false;
+  }
+
+  // SVG paths for dice faces 1-6
+  const diceDots: { [key: number]: string } = {
+    1: 'M50 50 h0',
+    2: 'M35 35 h0 M65 65 h0',
+    3: 'M35 35 h0 M50 50 h0 M65 65 h0',
+    4: 'M35 35 h0 M35 65 h0 M65 35 h0 M65 65 h0',
+    5: 'M35 35 h0 M35 65 h0 M50 50 h0 M65 35 h0 M65 65 h0',
+    6: 'M35 35 h0 M35 50 h0 M35 65 h0 M65 35 h0 M65 50 h0 M65 65 h0'
+  };
+</script>
+
+<div class="dice-container">
+  <svg
+    class="dice {isRolling ? 'rolling' : ''}"
+    width="100"
+    height="100"
+    viewBox="0 0 100 100"
+    on:click={rollD6}
+    on:keydown={e => e.key === 'Enter' && rollD6()}
+    tabindex="0"
+    role="button"
+    aria-label="Roll dice"
+  >
+    <!-- Dice cube -->
+    <rect x="10" y="10" width="80" height="80" rx="10" />
+    
+    <!-- Dice dots -->
+    {#if diceResult}
+      <path
+        d={diceDots[diceResult]}
+        fill="white"
+      />
+      {#each diceDots[diceResult].split('M').filter(Boolean) as dot}
+        <circle
+          cx={dot.split(' ')[0]}
+          cy={dot.split(' ')[1]}
+          r="5"
+          fill="white"
+        />
+      {/each}
+    {/if}
+  </svg>
+</div>
+
+<style>
+  .dice-container {
+    margin-top: 20px;
+    text-align: center;
+  }
+
+  .dice {
+    cursor: pointer;
+    transition: transform 0.1s ease-in-out;
+  }
+
+  .dice:hover {
+    transform: scale(1.05);
+  }
+
+  .rolling {
+    animation: roll 0.6s ease-in-out;
+  }
+
+  rect {
+    fill: #4a4a4a;
+    stroke: #5a5a5a;
+    stroke-width: 2;
+  }
+
+  @keyframes roll {
+    0% { transform: rotate(0deg) scale(1); }
+    25% { transform: rotate(90deg) scale(0.9); }
+    50% { transform: rotate(180deg) scale(1.1); }
+    75% { transform: rotate(270deg) scale(0.9); }
+    100% { transform: rotate(360deg) scale(1); }
+  }
+</style> 
