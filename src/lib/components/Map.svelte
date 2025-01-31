@@ -1,133 +1,126 @@
 <script lang="ts">
-  import { type TerrainSymbol, Terrain } from '$lib/map.svelte';
-  import { Dice, Roll } from '$lib/dice.svelte';
-  
-  const { terrain, dice } = $props<{
-    terrain: Terrain;
-    dice: Dice;
-  }>();
-  
-  let roll : Roll | null = null;
-  let landingPositions = $state<[number, number][]>([]);
-  let ballPosition = $derived(terrain.ballPosition);
-  let finished = $derived(ballPosition[0] === terrain.holePosition[0] && ballPosition[1] === terrain.holePosition[1]);
-  
+	import { type TerrainSymbol, Terrain } from '$lib/map.svelte';
+	import { Dice, Roll } from '$lib/dice.svelte';
 
-  $effect(() => {
-    if (finished) {
-      return;
-    }
-    if (dice.lastRoll !== null && roll?.timestamp !== dice.lastRoll?.timestamp) {
-      landingPositions = terrain.getLandingPositions(dice.lastRoll.result);
-      roll = new Roll(dice.lastRoll.result);
-      roll.timestamp = dice.lastRoll.timestamp;
-    } else {
-      landingPositions = [];
-    }
-  });
-  
+	const { terrain, dice } = $props<{
+		terrain: Terrain;
+		dice: Dice;
+	}>();
 
-  // Map terrain types to colors
-  const terrainColors: Record<TerrainSymbol, string> = {
-    g: 'grass',
-    w: 'water',
-    s: 'sand',
-    f: 'fairway',
-    t: 'tree',
-    u: 'up_arrow',
-    d: 'down_arrow',
-    l: 'left_arrow',
-    r: 'right_arrow',
-  };
+	let roll: Roll | null = null;
+	let landingPositions = $state<[number, number][]>([]);
+	let ballPosition = $derived(terrain.ballPosition);
+	let finished = $derived(
+		ballPosition[0] === terrain.holePosition[0] && ballPosition[1] === terrain.holePosition[1]
+	);
 
-  const backgroundColor = '#272727';
+	$effect(() => {
+		if (finished) {
+			return;
+		}
+		if (dice.lastRoll !== null && roll?.timestamp !== dice.lastRoll?.timestamp) {
+			landingPositions = terrain.getLandingPositions(dice.lastRoll.result);
+			roll = new Roll(dice.lastRoll.result);
+			roll.timestamp = dice.lastRoll.timestamp;
+		} else {
+			landingPositions = [];
+		}
+	});
 
+	// Map terrain types to colors
+	const terrainColors: Record<TerrainSymbol, string> = {
+		g: 'grass',
+		w: 'water',
+		s: 'sand',
+		f: 'fairway',
+		t: 'tree',
+		u: 'up_arrow',
+		d: 'down_arrow',
+		l: 'left_arrow',
+		r: 'right_arrow'
+	};
 
-  // Function to determine corner rounding for each corner
-  function getCornerRadii(row: number, col: number, currentTile: TerrainSymbol) {
-    const corners = { tl: 0, tr: 0, bl: 0, br: 0 };
-    const radius = 2;
+	const backgroundColor = '#272727';
 
-    // Check all adjacent tiles (including diagonals)
-    const hasTop = row > 0 && terrain.map[row-1][col] === currentTile;
-    const hasBottom = row < terrain.height-1 && terrain.map[row+1][col] === currentTile;
-    const hasLeft = col > 0 && terrain.map[row][col-1] === currentTile;
-    const hasRight = col < terrain.width-1 && terrain.map[row][col+1] === currentTile;
-    
-    // Top-left corner
-    if (!hasTop && !hasLeft) corners.tl = radius;
-    // Top-right corner
-    if (!hasTop && !hasRight) corners.tr = radius;
-    // Bottom-left corner
-    if (!hasBottom && !hasLeft) corners.bl = radius;
-    // Bottom-right corner
-    if (!hasBottom && !hasRight) corners.br = radius;
+	// Function to determine corner rounding for each corner
+	function getCornerRadii(row: number, col: number, currentTile: TerrainSymbol) {
+		const corners = { tl: 0, tr: 0, bl: 0, br: 0 };
+		const radius = 2;
 
-    return corners;
-  }
+		// Check all adjacent tiles (including diagonals)
+		const hasTop = row > 0 && terrain.map[row - 1][col] === currentTile;
+		const hasBottom = row < terrain.height - 1 && terrain.map[row + 1][col] === currentTile;
+		const hasLeft = col > 0 && terrain.map[row][col - 1] === currentTile;
+		const hasRight = col < terrain.width - 1 && terrain.map[row][col + 1] === currentTile;
 
-  // Function to check if a position matches the current tile
-  function isPositionAtTile(row: number, col: number, position: [number, number] | null): boolean {
-    return position !== null && position[1] === row && position[0] === col;
-  }
+		// Top-left corner
+		if (!hasTop && !hasLeft) corners.tl = radius;
+		// Top-right corner
+		if (!hasTop && !hasRight) corners.tr = radius;
+		// Bottom-left corner
+		if (!hasBottom && !hasLeft) corners.bl = radius;
+		// Bottom-right corner
+		if (!hasBottom && !hasRight) corners.br = radius;
 
-  function isLandingPosition(row: number, col: number): boolean {
-    return landingPositions.some(([x, y]) => x === col && y === row);
-  }
-  
-  function handleTileClick(row: number, col: number) {
-    if (isLandingPosition(row, col) && dice.lastRoll !== null) {
-      terrain.moveBall(dice.lastRoll.result, [col, row]);
-      dice.locked = false;
-      // Check if new position is on sand, update dice accordingly
-      if (terrain.map[row][col] === 's') {
-        dice.setMaxRoll(2);
-      } else if (terrain.map[row][col] === 'f') {
-        dice.setMaxRoll(8); 
-      } else {
-        dice.setMaxRoll(6);
-      }
-      landingPositions = [];
-      if (finished) {
-        dice.locked = true;
-      }
-    }
-  }
+		return corners;
+	}
+
+	// Function to check if a position matches the current tile
+	function isPositionAtTile(row: number, col: number, position: [number, number] | null): boolean {
+		return position !== null && position[1] === row && position[0] === col;
+	}
+
+	function isLandingPosition(row: number, col: number): boolean {
+		return landingPositions.some(([x, y]) => x === col && y === row);
+	}
+
+	function handleTileClick(row: number, col: number) {
+		if (isLandingPosition(row, col) && dice.lastRoll !== null) {
+			terrain.moveBall(dice.lastRoll.result, [col, row]);
+			dice.locked = false;
+			// Check if new position is on sand, update dice accordingly
+			if (terrain.map[row][col] === 's') {
+				dice.setMaxRoll(2);
+			} else if (terrain.map[row][col] === 'f') {
+				dice.setMaxRoll(8);
+			} else {
+				dice.setMaxRoll(6);
+			}
+			landingPositions = [];
+			if (finished) {
+				dice.locked = true;
+			}
+		}
+	}
 </script>
 
 <div class="map-container">
-  <div class="map" class:finished={finished}>
-    {#each terrain.map as row, rowIndex}
-      <div class="row">
-        {#each row as tile, colIndex}
-          {@const corners = getCornerRadii(rowIndex, colIndex, tile as TerrainSymbol)}
-          {@const isBall = isPositionAtTile(rowIndex, colIndex, ballPosition)}
-          {@const isHole = isPositionAtTile(rowIndex, colIndex, terrain.holePosition)}
-          {@const isStart = isPositionAtTile(rowIndex, colIndex, terrain.startPosition)}
-          {@const isLanding = isLandingPosition(rowIndex, colIndex)}
-          <svg 
-            viewBox="0 0 10 10" 
-            class:tile={true}
-            class:hole={isHole}
-            class:start={isStart}
-            class:landing={isLanding}
-            class={terrainColors[tile as TerrainSymbol]}
-            role="button"
-            aria-label={`${isBall ? 'ball' : isHole ? 'hole' : isStart ? 'start' : terrainColors[tile as TerrainSymbol]} terrain`}
-            onclick={() => handleTileClick(rowIndex, colIndex)}
-            onkeydown={(e) => e.key === 'Enter' && handleTileClick(rowIndex, colIndex)}
-            tabindex="0"
-            focusable="true"
-          >
-            <rect 
-              x="0" 
-              y="0" 
-              width="10" 
-              height="10" 
-              fill={backgroundColor}
-            />
-            <path 
-              d={`
+	<div class="map" class:finished>
+		{#each terrain.map as row, rowIndex}
+			<div class="row">
+				{#each row as tile, colIndex}
+					{@const corners = getCornerRadii(rowIndex, colIndex, tile as TerrainSymbol)}
+					{@const isBall = isPositionAtTile(rowIndex, colIndex, ballPosition)}
+					{@const isHole = isPositionAtTile(rowIndex, colIndex, terrain.holePosition)}
+					{@const isStart = isPositionAtTile(rowIndex, colIndex, terrain.startPosition)}
+					{@const isLanding = isLandingPosition(rowIndex, colIndex)}
+					<svg
+						viewBox="0 0 10 10"
+						class:tile={true}
+						class:hole={isHole}
+						class:start={isStart}
+						class:landing={isLanding}
+						class={terrainColors[tile as TerrainSymbol]}
+						role="button"
+						aria-label={`${isBall ? 'ball' : isHole ? 'hole' : isStart ? 'start' : terrainColors[tile as TerrainSymbol]} terrain`}
+						onclick={() => handleTileClick(rowIndex, colIndex)}
+						onkeydown={(e) => e.key === 'Enter' && handleTileClick(rowIndex, colIndex)}
+						tabindex="0"
+						focusable="true"
+					>
+						<rect x="0" y="0" width="10" height="10" fill={backgroundColor} />
+						<path
+							d={`
                 M ${0.5 + corners.tl} 0.5
                 H ${9.5 - corners.tr}
                 A ${corners.tr} ${corners.tr} 0 0 1 9.5 ${0.5 + corners.tr}
@@ -138,119 +131,112 @@
                 V ${0.5 + corners.tl}
                 A ${corners.tl} ${corners.tl} 0 0 1 ${0.5 + corners.tl} 0.5
               `}
-            />
-            {#if isBall}
-              <circle 
-                cx="5" 
-                cy="5" 
-                r="2.5" 
-                class="ball"
-                stroke="#666"
-                stroke-width="0.5"
-              />
-            {/if}
-          </svg>
-        {/each}
-      </div>
-    {/each}
-  </div>
-  {#if finished}
-    <div class="overlay">
-      <h1>Congratulations!</h1>
-    </div>
-  {/if}
+						/>
+						{#if isBall}
+							<circle cx="5" cy="5" r="2.5" class="ball" stroke="#666" stroke-width="0.5" />
+						{/if}
+					</svg>
+				{/each}
+			</div>
+		{/each}
+	</div>
+	{#if finished}
+		<div class="overlay">
+			<h1>Congratulations!</h1>
+		</div>
+	{/if}
 </div>
 
 <style>
-  .map-container {
-    position: relative;
-  }
+	.map-container {
+		position: relative;
+	}
 
-  .map {
-    display: flex;
-    flex-direction: column;
-    border: 2px solid #333;
-    background-color: backgroundColor;
-    padding: 10px;
-    border-radius: 4px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-  }
+	.map {
+		display: flex;
+		flex-direction: column;
+		border: 2px solid #333;
+		background-color: backgroundColor;
+		padding: 10px;
+		border-radius: 4px;
+		box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+	}
 
-  .map.finished {
-    filter: blur(3px);
-  }
-  
-  .row {
-    display: flex;
-  }
+	.map.finished {
+		filter: blur(3px);
+	}
 
-  .tile {
-    width: 32px;
-    height: 32px;
-    transition: transform 0.1s ease;
-  }
+	.row {
+		display: flex;
+	}
 
-  .tile.grass {
-    fill: #161;
-  }
+	.tile {
+		width: 32px;
+		height: 32px;
+		transition: transform 0.1s ease;
+	}
 
-  .tile.water {
-    fill: #33f;
-  }
+	.tile.grass {
+		fill: #161;
+	}
 
-  .tile.sand {
-    fill: #fa3;
-  }
+	.tile.water {
+		fill: #33f;
+	}
 
-  .tile.fairway {
-    fill: #3a3;
-  }
+	.tile.sand {
+		fill: #fa3;
+	}
 
-  .tile.tree {
-    fill: #666;
-  }
+	.tile.fairway {
+		fill: #3a3;
+	}
 
-  .tile.start {
-    fill: rgb(170, 51, 138);
-  }
+	.tile.tree {
+		fill: #666;
+	}
 
-  .tile.hole {
-    fill: #111;
-  }
+	.tile.start {
+		fill: rgb(170, 51, 138);
+	}
 
-  .ball {
-    fill: #d6d6d6;
-  }
+	.tile.hole {
+		fill: #111;
+	}
 
-  .tile:hover {
-    transform: scale(1.3);
-    cursor: pointer;
-  }
+	.ball {
+		fill: #d6d6d6;
+	}
 
-  .tile:hover rect {
-    fill: #f77;
-  }
+	.tile:hover {
+		transform: scale(1.3);
+		cursor: pointer;
+	}
 
-  .tile.landing rect {
-    fill: #f77;
-  }
+	.tile:hover rect {
+		fill: #f77;
+	}
 
-  .overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.3);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 10;
-  }
+	.tile.landing rect {
+		fill: #f77;
+	}
 
-  .overlay h1 {
-    color: #ffeaea;
-    font-size: 4em;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-  }
-</style> 
+	.overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background-color: rgba(0, 0, 0, 0.3);
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		z-index: 10;
+	}
+
+	.overlay h1 {
+		color: #ffeaea;
+		font-size: 4em;
+		text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+	}
+</style>

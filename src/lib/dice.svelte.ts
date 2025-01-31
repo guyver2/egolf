@@ -1,32 +1,32 @@
 export class Roll {
-    result: number;
-    timestamp: string;
-    constructor(result: number) {
-        this.result = result;
-        this.timestamp = Date.now().toString();
-    }
+	result: number;
+	timestamp: string;
+	constructor(result: number) {
+		this.result = result;
+		this.timestamp = Date.now().toString();
+	}
 }
 
 export class Dice {
-    maxRoll = $state(6);
-    lastRoll = $state<Roll | null>(null);
-    locked = $state(false);
+	maxRoll = $state(6);
+	lastRoll = $state<Roll | null>(null);
+	locked = $state(false);
 
-    constructor(initialMaxRoll: number = 6) {
-        this.maxRoll = initialMaxRoll;
-    }
+	constructor(initialMaxRoll: number = 6) {
+		this.maxRoll = initialMaxRoll;
+	}
 
-    setMaxRoll(newMaxRoll: number) {
-        this.maxRoll = newMaxRoll;
-    }
-    
-    setLastRoll(roll: Roll) {
-        this.lastRoll = roll;
-    }
+	setMaxRoll(newMaxRoll: number) {
+		this.maxRoll = newMaxRoll;
+	}
 
-    reset(initialMaxRoll: number = 6) {
-        this.locked = false;
-        this.lastRoll = null;
-        this.maxRoll = initialMaxRoll;
-    }
+	setLastRoll(roll: Roll) {
+		this.lastRoll = roll;
+	}
+
+	reset(initialMaxRoll: number = 6) {
+		this.locked = false;
+		this.lastRoll = null;
+		this.maxRoll = initialMaxRoll;
+	}
 }
