@@ -1,14 +1,20 @@
 <script lang="ts">
   import { type TerrainSymbol, Terrain } from '$lib/map';
+  import { Dice, Roll } from '$lib/dice';
   export let terrain: Terrain;
-  export let diceResult: number | null = null;
-
+  export let dice: Dice;
+  
+  let roll: Roll | null = null;
   let landingPositions: [number, number][] = [];
-  $: if (diceResult !== null) {
-    landingPositions = terrain.getLandingPositions(diceResult);
+  
+  // Subscribe to dice store changes, but only new rolls
+  $: if ($dice.lastRoll !== null && roll?.timestamp !== $dice.lastRoll?.timestamp) {
+    landingPositions = terrain.getLandingPositions($dice.lastRoll.result);
+    roll = $dice.lastRoll;
   } else {
     landingPositions = [];
   }
+  
 
   // Map terrain types to colors
   const terrainColors: Record<TerrainSymbol, string> = {
@@ -24,6 +30,8 @@
   };
 
   const backgroundColor = '#272727';
+
+
   // Function to determine corner rounding for each corner
   function getCornerRadii(row: number, col: number, currentTile: TerrainSymbol) {
     const corners = { tl: 0, tr: 0, bl: 0, br: 0 };
@@ -60,16 +68,18 @@
   $: ballPosition = terrain.ballPosition;
   
   function handleTileClick(row: number, col: number) {
-    console.log(`Clicked tile at ${col},${row}`);
-    console.log(diceResult);
-    console.log(isLandingPosition(row, col));
-    console.log(landingPositions);
-    if (isLandingPosition(row, col) && diceResult !== null) {
-      terrain.moveBall(diceResult, [col, row]);
+    if (isLandingPosition(row, col) && $dice.lastRoll !== null) {
+      terrain.moveBall($dice.lastRoll.result, [col, row]);
+      // Check if new position is on sand, update dice accordingly
+      if (terrain.map[row][col] === 's') {
+        dice.setMaxRoll(2);
+      } else if (terrain.map[row][col] === 'f') {
+        dice.setMaxRoll(8); 
+      } else {
+        dice.setMaxRoll(6);
+      }
       landingPositions = [];
-      console.log(terrain.ballPositionHistory);
       ballPosition = terrain.ballPosition;
-      console.log(`new ball isPositionAtTile: ${ballPosition}`);
     }
   }
 </script>

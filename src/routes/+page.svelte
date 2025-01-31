@@ -1,31 +1,32 @@
 <script lang="ts">
   import { Terrain } from '$lib/map';
   import Map from '$lib/components/Map.svelte';
-  import Dice from '$lib/components/Dice.svelte';
+  import Club from '$lib/components/Club.svelte';
   import HoleInfo from '$lib/components/HoleInfo.svelte';
+  import { Dice } from '$lib/dice';
   const width = 18;
   const height = 25;
   let seed = "not00set";
-  let diceResult: number | null = null;
   let terrain = new Terrain(seed, width, height);
+  let dice = new Dice(8);
   
   function handleSeedChange(event: CustomEvent) {
     seed = event.detail.seed;
     terrain = new Terrain(seed, width, height);
   }
 
-  function handleDiceRoll(event: CustomEvent) {
-    diceResult = event.detail.result;
-  }
+//   function handleDiceRoll(event: CustomEvent) {
+//     diceResult = event.detail.result;
+//   }
 </script>
 
 <div class="game-container">
  <div class="left-column">
-  <Dice on:diceRoll={handleDiceRoll} />
-  <HoleInfo on:seedChange={handleSeedChange}/>
+  <Club {dice} />
+  <HoleInfo {terrain} on:seedChange={handleSeedChange}/>
  </div>
  <div class="right-column">
-  <Map {terrain} {diceResult} />
+  <Map {terrain} {dice} />
  </div>
 </div>
 

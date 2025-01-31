@@ -1,13 +1,15 @@
 <script lang="ts">
     import { createEventDispatcher } from 'svelte';
+    import { Terrain } from '$lib/map';
     const dispatch = createEventDispatcher<{
         seedChange: { seed: string; }
     }>();
+    export let terrain: Terrain;
 
-    let seed = "not  set";  // Default 8-char value
-    let strokes = 0;
+    let seed = terrain.seed;  // Default 8-char value
+    $: strokes = $terrain.ballPositionHistory.length;
     let distance = 0;
-    let par = 6;
+    let par = terrain.par;
     let editingSeed = false;
 
     function handleSeedSubmit() {

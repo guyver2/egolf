@@ -1,26 +1,28 @@
 <script lang="ts">
-  import { Roll } from '$lib/dice';
-  import { createEventDispatcher } from 'svelte';
-  let roll: Roll | null = null;
-  let maxRoll = 6;
+  import { Dice, Roll } from '$lib/dice';
+  export let dice: Dice;
   let diceResult: number | null = 3;
   let isRolling = false;
-  
-  const dispatch = createEventDispatcher<{
-    diceRoll: { result: number };
-  }>();
+  // This will now properly react to store changes
 
-  async function rollD6() {
+  $: diceClass = `D${$dice.maxRoll}`;
+
+  async function rolling() {
     isRolling = true;
     // Animate through different numbers before settling
     for (let i = 0; i < 10; i++) {
-      diceResult = Math.floor(Math.random() * maxRoll) + 1;
+      diceResult = Math.floor(Math.random() * $dice.maxRoll) + 1;
       await new Promise(resolve => setTimeout(resolve, 100));
     }
     // Final result
-    diceResult = Math.floor(Math.random() * maxRoll) + 1;
-    dispatch('diceRoll', { result: diceResult });
+    diceResult = Math.floor(Math.random() * $dice.maxRoll) + 1;
+    dice.setLastRoll(new Roll(diceResult));
     isRolling = false;
+  }
+
+  async function putt() {
+    diceResult = 1;
+    dice.setLastRoll(new Roll(diceResult));
   }
 
   // SVG paths for dice faces 1-6
@@ -42,14 +44,14 @@
     width="100"
     height="100"
     viewBox="0 0 100 100"
-    on:click={rollD6}
-    on:keydown={e => e.key === 'Enter' && rollD6()}
+    on:click={rolling}
+    on:keydown={e => e.key === 'Enter' && rolling()}
     tabindex="0"
     role="button"
     aria-label="Roll dice"
   >
     <!-- Dice cube -->
-    <rect x="10" y="10" width="80" height="80" rx="10" />
+    <rect class={diceClass} x="10" y="10" width="80" height="80" rx="10" />
     
     <!-- Dice dots -->
     {#if diceResult}
@@ -67,6 +69,7 @@
       {/each}
     {/if}
   </svg>
+  <button class="putt-button" on:click={putt}>Putt</button>
 </div>
 
 <style>
@@ -81,15 +84,27 @@
   }
 
   .dice:hover {
-    transform: scale(1.05);
+    transform: scale(1.1);
   }
 
   .rolling {
-    animation: roll 0.6s ease-in-out;
+    animation: roll 0.8s ease-in-out;
   }
 
-  rect {
+  rect.D6{
     fill: #4a4a4a;
+    stroke: #5a5a5a;
+    stroke-width: 2;
+  }
+
+  rect.D2 {
+    fill: #f4c539;
+    stroke: #5a5a5a;
+    stroke-width: 2;
+  }
+
+  rect.D8 {
+    fill: #3bda58;
     stroke: #5a5a5a;
     stroke-width: 2;
   }
@@ -100,5 +115,15 @@
     50% { transform: rotate(180deg) scale(1.1); }
     75% { transform: rotate(270deg) scale(0.9); }
     100% { transform: rotate(360deg) scale(1); }
+  }
+
+  .putt-button {
+    margin-top: 10px;
+    background-color: #99a29b;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 5px;
   }
 </style> 

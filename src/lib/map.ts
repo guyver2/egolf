@@ -8,6 +8,8 @@
  *   u, d, l, r = slopes (up, down, left, right)
  */
 
+import { writable } from 'svelte/store';
+
 export type TerrainSymbol = 'g' | 'f' | 's' | 't' | 'w' | 'u' | 'd' | 'l' | 'r';
 
 function inBounds(x: number, y: number, W: number, H: number) {
@@ -23,20 +25,28 @@ export class Terrain {
     startPosition: [number, number];
     width: number;
     height: number;
+    par: number;
+
+    subscribe = writable(this).subscribe;
+    
+    private update() {
+        // Call this after any state changes
+        writable(this).update(state => state);
+    }
 
     constructor(seed: string, width: number, height: number) {
         this.width = width;
         this.height = height;
+        this.par = Math.floor(height / 5) + 1;
         this.map = generateTerrain(seed, width, height);
         this.seed = seed;
         this.ballPosition = this.findBallPosition();
         this.holePosition = this.findHolePosition();
         this.startPosition = this.ballPosition;
         this.ballPositionHistory = [];
-        console.log(`ballPosition: ${this.ballPosition}`);
-        console.log(`holePosition: ${this.holePosition}`);
         this.setNeighboursToFairway(this.ballPosition);
         this.setNeighboursToFairway(this.holePosition);
+        this.update();
     }
 
     // Helper to set neighbours to fairway
@@ -123,7 +133,6 @@ export class Terrain {
                 }
             }
         }
-        console.log(`validPositions: ${validPositions}`);
         return validPositions;
     }
 
@@ -132,6 +141,7 @@ export class Terrain {
         if (this.getLandingPositions(roll).some(([x, y]) => x === position[0] && y === position[1])) {
             this.ballPositionHistory.push(this.ballPosition);
             this.ballPosition = position;
+            this.update();
         } else {
             console.log(`Invalid move to ${position}, not in ${this.getLandingPositions(roll)}`);
         }
@@ -158,7 +168,6 @@ function erode(terrain: TerrainSymbol[][], type: TerrainSymbol): TerrainSymbol[]
             if (inBounds(nx, ny, W, H) && terrain[ny][nx] === type) neighbors++;
           }
           if (neighbors < 8) {
-              console.log(`Eroding ${x},${y}`);
               tempTerrain[y][x] = 'g';
           }
         }
@@ -177,7 +186,6 @@ function erode(terrain: TerrainSymbol[][], type: TerrainSymbol): TerrainSymbol[]
           for (const [dx, dy] of [[0,1], [0,-1], [1,0], [-1,0], [1,1], [1,-1], [-1,1], [-1,-1]]) {
             const nx = x + dx, ny = y + dy;
             if (inBounds(nx, ny, W, H)) {
-             console.log(`Dilating ${nx},${ny}`);
               tempTerrain[ny][nx] = type;
             }
           }
@@ -254,7 +262,6 @@ export function generateTerrain(seed: string, W: number, H: number): TerrainSymb
     // Set random seed for deterministic generation
     Math.random = (() => {
         let numSeed = stringToUniqueNumber(seed);
-        console.log(`numSeed: ${numSeed}`);
         return () => {
             numSeed = (numSeed * 16807) % 2147483647;
             return (numSeed - 1) / 2147483646;
