@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Terrain } from '$lib/map';
+  import { Terrain } from '$lib/map.svelte';
   import Map from '$lib/components/Map.svelte';
   import Club from '$lib/components/Club.svelte';
   import HoleInfo from '$lib/components/HoleInfo.svelte';
@@ -7,20 +7,16 @@
   const width = 18;
   const height = 25;
   let seed = "not00set";
-  let terrain = new Terrain(seed, width, height);
+  const terrain = new Terrain(seed, width, height);
   const dice = new Dice(8);
   
-  function handleSeedChange(event: CustomEvent) {
-    seed = event.detail.seed;
-    terrain = new Terrain(seed, width, height);
-  }
 
 </script>
 
 <div class="game-container">
  <div class="left-column">
   <Club {dice} />
-  <HoleInfo {terrain} on:seedChange={handleSeedChange}/>
+  <HoleInfo {terrain} {dice}/>
  </div>
  <div class="right-column">
   <Map {dice} {terrain} />

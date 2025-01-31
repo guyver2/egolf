@@ -10,6 +10,7 @@
   const diceClass = $derived(`D${dice.maxRoll}`);
 
   async function rolling() {
+    if (dice.locked) return;
     isRolling = true;
     // Animate through different numbers before settling
     for (let i = 0; i < 10; i++) {
@@ -20,9 +21,12 @@
     diceResult = Math.floor(Math.random() * dice.maxRoll) + 1;
     dice.setLastRoll(new Roll(diceResult));
     isRolling = false;
+    dice.locked = true;
   }
 
   async function putt() {
+    if (dice.locked) return;
+    dice.locked = true;
     diceResult = 1;
     dice.setLastRoll(new Roll(diceResult));
   }
@@ -43,6 +47,7 @@
 <div class="dice-container">
   <svg
     class="dice {isRolling ? 'rolling' : ''}"
+    class:locked={dice.locked}
     width="100"
     height="100"
     viewBox="0 0 100 100"
@@ -71,7 +76,11 @@
       {/each}
     {/if}
   </svg>
-  <button class="putt-button" onclick={putt}>Putt</button>
+  <button 
+    class="putt-button" 
+    class:locked={dice.locked}
+    onclick={putt}
+  >Putt</button>
 </div>
 
 <style>
@@ -84,6 +93,9 @@
     cursor: pointer;
     transition: transform 0.1s ease-in-out;
   }
+  .dice.locked {
+    cursor: not-allowed;
+  }
 
   .dice:hover {
     transform: scale(1.1);
@@ -94,21 +106,29 @@
   }
 
   rect.D6{
-    fill: #4a4a4a;
+    fill: #161;
     stroke: #5a5a5a;
     stroke-width: 2;
   }
 
   rect.D2 {
-    fill: #f4c539;
+    fill: #fa3;
     stroke: #5a5a5a;
     stroke-width: 2;
   }
 
   rect.D8 {
-    fill: #3bda58;
+    fill: #3a3;
     stroke: #5a5a5a;
     stroke-width: 2;
+  }
+
+  .dice.locked rect {
+    fill: #5a5a5a;
+  }
+
+  .dice.locked:hover {
+    transform: none;
   }
 
   @keyframes roll {
@@ -121,11 +141,16 @@
 
   .putt-button {
     margin-top: 10px;
-    background-color: #99a29b;
+    background-color: #88908a;
     color: white;
     border: none;
     padding: 5px 10px;
     cursor: pointer;
     border-radius: 5px;
   }
+  .putt-button.locked {
+    cursor: not-allowed;
+    background-color: #5a5a5a;
+  }
+
 </style> 

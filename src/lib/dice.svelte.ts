@@ -10,6 +10,7 @@ export class Roll {
 export class Dice {
     maxRoll = $state(6);
     lastRoll = $state<Roll | null>(null);
+    locked = $state(false);
 
     constructor(initialMaxRoll: number = 6) {
         this.maxRoll = initialMaxRoll;
@@ -21,5 +22,11 @@ export class Dice {
     
     setLastRoll(roll: Roll) {
         this.lastRoll = roll;
+    }
+
+    reset(initialMaxRoll: number = 6) {
+        this.locked = false;
+        this.lastRoll = null;
+        this.maxRoll = initialMaxRoll;
     }
 }

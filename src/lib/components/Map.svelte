@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { type TerrainSymbol, Terrain } from '$lib/map';
+  import { type TerrainSymbol, Terrain } from '$lib/map.svelte';
   import { Dice, Roll } from '$lib/dice.svelte';
   
   const { terrain, dice } = $props<{
@@ -10,9 +10,13 @@
   let roll : Roll | null = null;
   let landingPositions = $state<[number, number][]>([]);
   let ballPosition = $derived(terrain.ballPosition);
+  let finished = $derived(ballPosition[0] === terrain.holePosition[0] && ballPosition[1] === terrain.holePosition[1]);
   
 
   $effect(() => {
+    if (finished) {
+      return;
+    }
     if (dice.lastRoll !== null && roll?.timestamp !== dice.lastRoll?.timestamp) {
       landingPositions = terrain.getLandingPositions(dice.lastRoll.result);
       roll = new Roll(dice.lastRoll.result);
@@ -74,6 +78,7 @@
   function handleTileClick(row: number, col: number) {
     if (isLandingPosition(row, col) && dice.lastRoll !== null) {
       terrain.moveBall(dice.lastRoll.result, [col, row]);
+      dice.locked = false;
       // Check if new position is on sand, update dice accordingly
       if (terrain.map[row][col] === 's') {
         dice.setMaxRoll(2);
@@ -83,70 +88,84 @@
         dice.setMaxRoll(6);
       }
       landingPositions = [];
+      if (finished) {
+        dice.locked = true;
+      }
     }
   }
 </script>
 
-<div class="map">
-  {#each terrain.map as row, rowIndex}
-    <div class="row">
-      {#each row as tile, colIndex}
-        {@const corners = getCornerRadii(rowIndex, colIndex, tile as TerrainSymbol)}
-        {@const isBall = isPositionAtTile(rowIndex, colIndex, ballPosition)}
-        {@const isHole = isPositionAtTile(rowIndex, colIndex, terrain.holePosition)}
-        {@const isStart = isPositionAtTile(rowIndex, colIndex, terrain.startPosition)}
-        {@const isLanding = isLandingPosition(rowIndex, colIndex)}
-        <svg 
-          viewBox="0 0 10 10" 
-          class:tile={true}
-          class:hole={isHole}
-          class:start={isStart}
-          class:landing={isLanding}
-          class={terrainColors[tile as TerrainSymbol]}
-          role="button"
-          aria-label={`${isBall ? 'ball' : isHole ? 'hole' : isStart ? 'start' : terrainColors[tile as TerrainSymbol]} terrain`}
-          onclick={() => handleTileClick(rowIndex, colIndex)}
-          onkeydown={(e) => e.key === 'Enter' && handleTileClick(rowIndex, colIndex)}
-          tabindex="0"
-          focusable="true"
-        >
-          <rect 
-            x="0" 
-            y="0" 
-            width="10" 
-            height="10" 
-            fill={backgroundColor}
-          />
-          <path 
-            d={`
-              M ${0.5 + corners.tl} 0.5
-              H ${9.5 - corners.tr}
-              A ${corners.tr} ${corners.tr} 0 0 1 9.5 ${0.5 + corners.tr}
-              V ${9.5 - corners.br}
-              A ${corners.br} ${corners.br} 0 0 1 ${9.5 - corners.br} 9.5
-              H ${0.5 + corners.bl}
-              A ${corners.bl} ${corners.bl} 0 0 1 0.5 ${9.5 - corners.bl}
-              V ${0.5 + corners.tl}
-              A ${corners.tl} ${corners.tl} 0 0 1 ${0.5 + corners.tl} 0.5
-            `}
-          />
-          {#if isBall}
-            <circle 
-              cx="5" 
-              cy="5" 
-              r="2.5" 
-              class="ball"
-              stroke="#666"
-              stroke-width="0.5"
+<div class="map-container">
+  <div class="map" class:finished={finished}>
+    {#each terrain.map as row, rowIndex}
+      <div class="row">
+        {#each row as tile, colIndex}
+          {@const corners = getCornerRadii(rowIndex, colIndex, tile as TerrainSymbol)}
+          {@const isBall = isPositionAtTile(rowIndex, colIndex, ballPosition)}
+          {@const isHole = isPositionAtTile(rowIndex, colIndex, terrain.holePosition)}
+          {@const isStart = isPositionAtTile(rowIndex, colIndex, terrain.startPosition)}
+          {@const isLanding = isLandingPosition(rowIndex, colIndex)}
+          <svg 
+            viewBox="0 0 10 10" 
+            class:tile={true}
+            class:hole={isHole}
+            class:start={isStart}
+            class:landing={isLanding}
+            class={terrainColors[tile as TerrainSymbol]}
+            role="button"
+            aria-label={`${isBall ? 'ball' : isHole ? 'hole' : isStart ? 'start' : terrainColors[tile as TerrainSymbol]} terrain`}
+            onclick={() => handleTileClick(rowIndex, colIndex)}
+            onkeydown={(e) => e.key === 'Enter' && handleTileClick(rowIndex, colIndex)}
+            tabindex="0"
+            focusable="true"
+          >
+            <rect 
+              x="0" 
+              y="0" 
+              width="10" 
+              height="10" 
+              fill={backgroundColor}
             />
-          {/if}
-        </svg>
-      {/each}
+            <path 
+              d={`
+                M ${0.5 + corners.tl} 0.5
+                H ${9.5 - corners.tr}
+                A ${corners.tr} ${corners.tr} 0 0 1 9.5 ${0.5 + corners.tr}
+                V ${9.5 - corners.br}
+                A ${corners.br} ${corners.br} 0 0 1 ${9.5 - corners.br} 9.5
+                H ${0.5 + corners.bl}
+                A ${corners.bl} ${corners.bl} 0 0 1 0.5 ${9.5 - corners.bl}
+                V ${0.5 + corners.tl}
+                A ${corners.tl} ${corners.tl} 0 0 1 ${0.5 + corners.tl} 0.5
+              `}
+            />
+            {#if isBall}
+              <circle 
+                cx="5" 
+                cy="5" 
+                r="2.5" 
+                class="ball"
+                stroke="#666"
+                stroke-width="0.5"
+              />
+            {/if}
+          </svg>
+        {/each}
+      </div>
+    {/each}
+  </div>
+  {#if finished}
+    <div class="overlay">
+      <h1>Congratulations!</h1>
     </div>
-  {/each}
+  {/if}
 </div>
 
 <style>
+  .map-container {
+    position: relative;
+  }
+
   .map {
     display: flex;
     flex-direction: column;
@@ -155,6 +174,10 @@
     padding: 10px;
     border-radius: 4px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  }
+
+  .map.finished {
+    filter: blur(3px);
   }
   
   .row {
@@ -212,4 +235,22 @@
     fill: #f77;
   }
 
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+  }
+
+  .overlay h1 {
+    color: #ffeaea;
+    font-size: 4em;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  }
 </style> 

@@ -1,22 +1,20 @@
 <script lang="ts">
-    import { createEventDispatcher } from 'svelte';
-    import { Terrain } from '$lib/map';
-    const dispatch = createEventDispatcher<{
-        seedChange: { seed: string; }
-    }>();
-    export let terrain: Terrain;
+    import { Terrain } from '$lib/map.svelte';
+    import { Dice } from '$lib/dice.svelte';
+    const { terrain, dice } = $props<{ terrain: Terrain, dice: Dice }>();
 
-    let seed = terrain.seed;  // Default 8-char value
-    $: strokes = $terrain.ballPositionHistory.length;
-    let distance = 0;
+    let seed = $state(terrain.seed);  // Default 8-char value
+    let strokes = $derived(terrain.ballPositionHistory.length);
+    let distance = $derived(Math.abs(terrain.ballPosition[0] - terrain.holePosition[0]) + Math.abs(terrain.ballPosition[1] - terrain.holePosition[1]));
     let par = terrain.par;
-    let editingSeed = false;
+    let editingSeed = $state(false);
 
     function handleSeedSubmit() {
         // Ensure seed is 8 chars, alphanumeric only
         seed = seed.replace(/[^a-zA-Z0-9]/g, '0').slice(0, 8).padEnd(8, '0');
         editingSeed = false;
-        dispatch('seedChange', { seed });
+        terrain.regenerate(seed, terrain.width, terrain.height);
+        dice.reset(8);
     }
 </script>
 
@@ -28,21 +26,25 @@
                 maxlength="8"
                 pattern="[a-zA-Z0-9]+"
                 bind:value={seed}
-                on:blur={handleSeedSubmit}
-                on:keydown={(e) => e.key === 'Enter' && handleSeedSubmit()}
+                onblur={handleSeedSubmit}
+                onkeydown={(e) => e.key === 'Enter' && handleSeedSubmit()}
                 autofocus
             />
         {:else}
             <button 
-                type="button" 
-                on:click={() => editingSeed = true}
+                type="button"
+                onclick={() => editingSeed = true}
             >{seed.slice(0, 4)}-{seed.slice(4, 8)}</button>
         {/if}
     </p>
-    <p><button on:click={() => {
+    <p><button class="seed-button" onclick={() => {
         seed = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
         handleSeedSubmit();
-    }}>Random Seed!</button></p>
+    }}>Random Map!</button></p>
+    <p><button class="seed-button" onclick={() => {
+        terrain.regenerate(terrain.seed, terrain.width, terrain.height);
+        dice.reset(8);
+    }}>Retry!</button></p>
     <p>Par: {par}</p>
     <p>Strokes: {strokes}</p>
     <p>Distance: {distance}</p>
@@ -67,4 +69,14 @@
         padding: 2px 4px;
         width: 60px;
     }
+
+    .seed-button {
+        margin-top: 10px;
+        background-color: #99a29b;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        cursor: pointer;
+        border-radius: 5px;
+  }
 </style> 

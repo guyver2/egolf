@@ -8,7 +8,6 @@
  *   u, d, l, r = slopes (up, down, left, right)
  */
 
-import { writable } from 'svelte/store';
 
 export type TerrainSymbol = 'g' | 'f' | 's' | 't' | 'w' | 'u' | 'd' | 'l' | 'r';
 
@@ -17,22 +16,15 @@ function inBounds(x: number, y: number, W: number, H: number) {
   }
 
 export class Terrain {
-    map: TerrainSymbol[][];
-    seed: string;
-    ballPosition: [number, number];
-    ballPositionHistory: [number, number][];
-    holePosition: [number, number];
-    startPosition: [number, number];
-    width: number;
-    height: number;
-    par: number;
-
-    subscribe = writable(this).subscribe;
-    
-    private update() {
-        // Call this after any state changes
-        writable(this).update(state => state);
-    }
+    map = $state<TerrainSymbol[][]>([]);
+    seed = $state('');
+    ballPosition = $state<[number, number]>([0, 0]);
+    ballPositionHistory = $state<[number, number][]>([]);
+    holePosition = $state<[number, number]>([0, 0]);
+    startPosition = $state<[number, number]>([0, 0]);
+    width = $state(0);
+    height = $state(0);
+    par = $state(0);
 
     constructor(seed: string, width: number, height: number) {
         this.width = width;
@@ -46,11 +38,24 @@ export class Terrain {
         this.ballPositionHistory = [];
         this.setNeighboursToFairway(this.ballPosition);
         this.setNeighboursToFairway(this.holePosition);
-        this.update();
+    }
+
+    public regenerate(seed: string, width: number, height: number) {
+      this.width = width;
+      this.height = height;
+      this.par = Math.floor(height / 5) + 1;
+      this.map = generateTerrain(seed, width, height);
+      this.seed = seed;
+      this.ballPosition = this.findBallPosition();
+      this.holePosition = this.findHolePosition();
+      this.startPosition = this.ballPosition;
+      this.ballPositionHistory = [];
+      this.setNeighboursToFairway(this.ballPosition);
+      this.setNeighboursToFairway(this.holePosition);
     }
 
     // Helper to set neighbours to fairway
-    setNeighboursToFairway(pos: [number, number]) {
+    private setNeighboursToFairway(pos: [number, number]) {
         for (let dy = -1; dy <= 1; dy++) {
             for (let dx = -1; dx <= 1; dx++) {
                 const x = pos[0] + dx;
@@ -63,7 +68,7 @@ export class Terrain {
         }
     }
 
-    findBallPosition(): [number, number] {
+    private findBallPosition(): [number, number] {
         let ballPlaced = false;
         for (let attempts = 0; attempts < 100 && !ballPlaced; attempts++) {
             const startX = randInt(0, this.width - 1);
@@ -85,7 +90,7 @@ export class Terrain {
         return this.ballPosition;
     }
 
-    findHolePosition(): [number, number] {
+    private findHolePosition(): [number, number] {
         let holePlaced = false;
         for (let attempts = 0; attempts < 100 && !holePlaced; attempts++) {
             const startX = randInt(0, this.width - 1);
@@ -107,7 +112,7 @@ export class Terrain {
         return this.holePosition;
     }
 
-    getLandingPositions(roll: number): [number, number][] {
+    public getLandingPositions(roll: number): [number, number][] {
         const directions = [
             [-1, -1], [0, -1], [1, -1],  // NW, N, NE
             [-1, 0],           [1, 0],    // W, E
@@ -137,11 +142,10 @@ export class Terrain {
     }
 
 
-    moveBall(roll: number, position: [number, number]) {        
+    public moveBall(roll: number, position: [number, number]) {        
         if (this.getLandingPositions(roll).some(([x, y]) => x === position[0] && y === position[1])) {
             this.ballPositionHistory.push(this.ballPosition);
             this.ballPosition = position;
-            this.update();
         } else {
             console.log(`Invalid move to ${position}, not in ${this.getLandingPositions(roll)}`);
         }
