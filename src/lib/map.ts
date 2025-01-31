@@ -6,18 +6,21 @@
  *   t = tree
  *   w = water
  *   u, d, l, r = slopes (up, down, left, right)
- *   b = ball (start) – placed on a fairway tile in bottom quarter
- *   h = hole (end) – placed on a fairway tile in top quarter
  */
 
-export type TerrainSymbol = 'g' | 'f' | 's' | 't' | 'w' | 'u' | 'd' | 'l' | 'r' | 'b' | 'h';
+export type TerrainSymbol = 'g' | 'f' | 's' | 't' | 'w' | 'u' | 'd' | 'l' | 'r';
 
+function inBounds(x: number, y: number, W: number, H: number) {
+    return x >= 0 && x < W && y >= 0 && y < H;
+  }
 
 export class Terrain {
     map: TerrainSymbol[][];
     seed: string;
     ballPosition: [number, number];
+    ballPositionHistory: [number, number][];
     holePosition: [number, number];
+    startPosition: [number, number];
     width: number;
     height: number;
 
@@ -28,6 +31,8 @@ export class Terrain {
         this.seed = seed;
         this.ballPosition = this.findBallPosition();
         this.holePosition = this.findHolePosition();
+        this.startPosition = this.ballPosition;
+        this.ballPositionHistory = [];
         console.log(`ballPosition: ${this.ballPosition}`);
         console.log(`holePosition: ${this.holePosition}`);
         this.setNeighboursToFairway(this.ballPosition);
@@ -54,7 +59,7 @@ export class Terrain {
             const startX = randInt(0, this.width - 1);
             for (let y = this.height - 1; y >= Math.floor(3*this.height/4); y--) {
                 if (this.map[y][startX] === 'f') {
-                    this.map[y][startX] = 'b';
+                    //this.map[y][startX] = 'b';
                     ballPlaced = true;
                     this.ballPosition = [startX, y];
                     break;
@@ -64,7 +69,7 @@ export class Terrain {
         if (!ballPlaced) {
             // Fallback: if we never found a fairway in bottom quarter,
             // just place ball in bottom-left corner forcibly
-            this.map[this.height - 2][1] = 'b';
+            //this.map[this.height - 2][1] = 'b';
             this.ballPosition = [1, this.height - 2];
         }
         return this.ballPosition;
@@ -76,7 +81,7 @@ export class Terrain {
             const startX = randInt(0, this.width - 1);
             for (let y = 0; y < Math.floor(this.height/4); y++) {
                 if (this.map[y][startX] === 'f') {
-                    this.map[y][startX] = 'h';
+                    //this.map[y][startX] = 'h';
                     holePlaced = true;
                     this.holePosition = [startX, y];
                     break;
@@ -86,17 +91,54 @@ export class Terrain {
         if (!holePlaced) {
             // Fallback: if we never found a fairway in top quarter,
             // just place hole in top-right corner forcibly
-            this.map[1][this.width - 2] = 'h';
+            //this.map[1][this.width - 2] = 'h';
             this.holePosition = [this.width - 2, 1];
         }
         return this.holePosition;
     }
+
+    getLandingPositions(roll: number): [number, number][] {
+        const directions = [
+            [-1, -1], [0, -1], [1, -1],  // NW, N, NE
+            [-1, 0],           [1, 0],    // W, E
+            [-1, 1],  [0, 1],  [1, 1]     // SW, S, SE
+        ];
+        
+        const validPositions: [number, number][] = [];
+        const [startX, startY] = this.ballPosition;
+        
+        for (const [dx, dy] of directions) {
+            // Calculate target position
+            const targetX = startX + (dx * roll);
+            const targetY = startY + (dy * roll);
+            
+            // Check if position is in bounds
+            if (targetX >= 0 && targetX < this.width && 
+                targetY >= 0 && targetY < this.height) {
+                
+                // Check if target position is not a tree or water
+                const terrain = this.map[targetY][targetX];
+                if (terrain !== 't' && terrain !== 'w') {
+                    validPositions.push([targetX, targetY]);
+                }
+            }
+        }
+        console.log(`validPositions: ${validPositions}`);
+        return validPositions;
+    }
+
+
+    moveBall(roll: number, position: [number, number]) {        
+        if (this.getLandingPositions(roll).some(([x, y]) => x === position[0] && y === position[1])) {
+            this.ballPositionHistory.push(this.ballPosition);
+            this.ballPosition = position;
+        } else {
+            console.log(`Invalid move to ${position}, not in ${this.getLandingPositions(roll)}`);
+        }
+    }
 }
 
 
-function inBounds(x: number, y: number, W: number, H: number) {
-  return x >= 0 && x < W && y >= 0 && y < H;
-}
 
 // Convenience helpers
 const randInt = (min: number, max: number) => 

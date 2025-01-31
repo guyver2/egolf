@@ -6,21 +6,26 @@
   const width = 18;
   const height = 25;
   let seed = "not00set";
+  let diceResult: number | null = null;
   let terrain = new Terrain(seed, width, height);
   
   function handleSeedChange(event: CustomEvent) {
     seed = event.detail.seed;
     terrain = new Terrain(seed, width, height);
   }
+
+  function handleDiceRoll(event: CustomEvent) {
+    diceResult = event.detail.result;
+  }
 </script>
 
 <div class="game-container">
  <div class="left-column">
-  <Dice />
+  <Dice on:diceRoll={handleDiceRoll} />
   <HoleInfo on:seedChange={handleSeedChange}/>
  </div>
  <div class="right-column">
-  <Map {terrain} />
+  <Map {terrain} {diceResult} />
  </div>
 </div>
 

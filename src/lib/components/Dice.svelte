@@ -1,16 +1,25 @@
 <script lang="ts">
-  let diceResult: number | null = 6;
+  import { Roll } from '$lib/dice';
+  import { createEventDispatcher } from 'svelte';
+  let roll: Roll | null = null;
+  let maxRoll = 6;
+  let diceResult: number | null = 3;
   let isRolling = false;
   
+  const dispatch = createEventDispatcher<{
+    diceRoll: { result: number };
+  }>();
+
   async function rollD6() {
     isRolling = true;
     // Animate through different numbers before settling
     for (let i = 0; i < 10; i++) {
-      diceResult = Math.floor(Math.random() * 6) + 1;
+      diceResult = Math.floor(Math.random() * maxRoll) + 1;
       await new Promise(resolve => setTimeout(resolve, 100));
     }
     // Final result
-    diceResult = Math.floor(Math.random() * 6) + 1;
+    diceResult = Math.floor(Math.random() * maxRoll) + 1;
+    dispatch('diceRoll', { result: diceResult });
     isRolling = false;
   }
 
@@ -21,7 +30,9 @@
     3: 'M35 35 h0 M50 50 h0 M65 65 h0',
     4: 'M35 35 h0 M35 65 h0 M65 35 h0 M65 65 h0',
     5: 'M35 35 h0 M35 65 h0 M50 50 h0 M65 35 h0 M65 65 h0',
-    6: 'M35 35 h0 M35 50 h0 M35 65 h0 M65 35 h0 M65 50 h0 M65 65 h0'
+    6: 'M35 35 h0 M35 50 h0 M35 65 h0 M65 35 h0 M65 50 h0 M65 65 h0',
+    7: 'M35 35 h0 M35 50 h0 M35 65 h0 M50 50 h0 M65 35 h0 M65 50 h0 M65 65 h0',
+    8: 'M35 35 h0 M35 50 h0 M35 65 h0 M50 35 h0 M50 65 h0 M65 35 h0 M65 50 h0 M65 65 h0'
   };
 </script>
 

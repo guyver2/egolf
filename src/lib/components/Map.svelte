@@ -1,7 +1,14 @@
 <script lang="ts">
   import { type TerrainSymbol, Terrain } from '$lib/map';
   export let terrain: Terrain;
-  let seed = "not00set";
+  export let diceResult: number | null = null;
+
+  let landingPositions: [number, number][] = [];
+  $: if (diceResult !== null) {
+    landingPositions = terrain.getLandingPositions(diceResult);
+  } else {
+    landingPositions = [];
+  }
 
   // Map terrain types to colors
   const terrainColors: Record<TerrainSymbol, string> = {
@@ -10,8 +17,6 @@
     s: 'sand',
     f: 'fairway',
     t: 'tree',
-    b: 'ball',
-    h: 'hole',
     u: 'up_arrow',
     d: 'down_arrow',
     l: 'left_arrow',
@@ -41,6 +46,32 @@
 
     return corners;
   }
+
+  // Function to check if a position matches the current tile
+  function isPositionAtTile(row: number, col: number, position: [number, number] | null): boolean {
+    return position !== null && position[1] === row && position[0] === col;
+  }
+
+  function isLandingPosition(row: number, col: number): boolean {
+    return landingPositions.some(([x, y]) => x === col && y === row);
+  }
+
+  // Make ball position reactive
+  $: ballPosition = terrain.ballPosition;
+  
+  function handleTileClick(row: number, col: number) {
+    console.log(`Clicked tile at ${col},${row}`);
+    console.log(diceResult);
+    console.log(isLandingPosition(row, col));
+    console.log(landingPositions);
+    if (isLandingPosition(row, col) && diceResult !== null) {
+      terrain.moveBall(diceResult, [col, row]);
+      landingPositions = [];
+      console.log(terrain.ballPositionHistory);
+      ballPosition = terrain.ballPosition;
+      console.log(`new ball isPositionAtTile: ${ballPosition}`);
+    }
+  }
 </script>
 
 <div class="map">
@@ -48,11 +79,19 @@
     <div class="row">
       {#each row as tile, colIndex}
         {@const corners = getCornerRadii(rowIndex, colIndex, tile)}
+        {@const isBall = isPositionAtTile(rowIndex, colIndex, ballPosition)}
+        {@const isHole = isPositionAtTile(rowIndex, colIndex, terrain.holePosition)}
+        {@const isStart = isPositionAtTile(rowIndex, colIndex, terrain.startPosition)}
+        {@const isLanding = isLandingPosition(rowIndex, colIndex)}
         <svg 
           viewBox="0 0 10 10" 
-          class={`tile ${terrainColors[tile]}`}
-          role="img"
-          aria-label={`${terrainColors[tile]} terrain`}
+          class={`tile ${isHole ? 'hole' : isStart ? 'start' : terrainColors[tile]} ${isLanding ? 'landing' : ''}`}
+          role="button"
+          aria-label={`${isBall ? 'ball' : isHole ? 'hole' : isStart ? 'start' : terrainColors[tile]} terrain`}
+          on:click={() => handleTileClick(rowIndex, colIndex)}
+          on:keydown={(e) => e.key === 'Enter' && handleTileClick(rowIndex, colIndex)}
+          tabindex="0"
+          focusable="true"
         >
           <rect 
             x="0" 
@@ -74,6 +113,16 @@
               A ${corners.tl} ${corners.tl} 0 0 1 ${0.5 + corners.tl} 0.5
             `}
           />
+          {#if isBall}
+            <circle 
+              cx="5" 
+              cy="5" 
+              r="2.5" 
+              class="ball"
+              stroke="#666"
+              stroke-width="0.5"
+            />
+          {/if}
         </svg>
       {/each}
     </div>
@@ -121,12 +170,16 @@
     fill: #666;
   }
 
-  .tile.ball {
+  .tile.start {
     fill: rgb(170, 51, 138);
   }
 
   .tile.hole {
     fill: #111;
+  }
+
+  .ball {
+    fill: #d6d6d6;
   }
 
   .tile:hover {
@@ -135,6 +188,10 @@
   }
 
   .tile:hover rect {
+    fill: #f77;
+  }
+
+  .tile.landing rect{
     fill: #f77;
   }
 </style> 
