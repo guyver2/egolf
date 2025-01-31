@@ -1,21 +1,23 @@
 <script lang="ts">
-  import { Dice, Roll } from '$lib/dice';
-  export let dice: Dice;
-  let diceResult: number | null = 3;
-  let isRolling = false;
+  import { Dice, Roll } from '$lib/dice.svelte';
+  
+  const { dice } = $props<{ dice: Dice }>();
+
+  let diceResult = $state<number | null>(3);
+  let isRolling = $state(false);
   // This will now properly react to store changes
 
-  $: diceClass = `D${$dice.maxRoll}`;
+  const diceClass = $derived(`D${dice.maxRoll}`);
 
   async function rolling() {
     isRolling = true;
     // Animate through different numbers before settling
     for (let i = 0; i < 10; i++) {
-      diceResult = Math.floor(Math.random() * $dice.maxRoll) + 1;
+      diceResult = Math.floor(Math.random() * dice.maxRoll) + 1;
       await new Promise(resolve => setTimeout(resolve, 100));
     }
     // Final result
-    diceResult = Math.floor(Math.random() * $dice.maxRoll) + 1;
+    diceResult = Math.floor(Math.random() * dice.maxRoll) + 1;
     dice.setLastRoll(new Roll(diceResult));
     isRolling = false;
   }
@@ -44,8 +46,8 @@
     width="100"
     height="100"
     viewBox="0 0 100 100"
-    on:click={rolling}
-    on:keydown={e => e.key === 'Enter' && rolling()}
+    onclick={rolling}
+    onkeydown={e => e.key === 'Enter' && rolling()}
     tabindex="0"
     role="button"
     aria-label="Roll dice"
@@ -69,7 +71,7 @@
       {/each}
     {/if}
   </svg>
-  <button class="putt-button" on:click={putt}>Putt</button>
+  <button class="putt-button" onclick={putt}>Putt</button>
 </div>
 
 <style>

@@ -3,21 +3,18 @@
   import Map from '$lib/components/Map.svelte';
   import Club from '$lib/components/Club.svelte';
   import HoleInfo from '$lib/components/HoleInfo.svelte';
-  import { Dice } from '$lib/dice';
+  import { Dice } from '$lib/dice.svelte';
   const width = 18;
   const height = 25;
   let seed = "not00set";
   let terrain = new Terrain(seed, width, height);
-  let dice = new Dice(8);
+  const dice = new Dice(8);
   
   function handleSeedChange(event: CustomEvent) {
     seed = event.detail.seed;
     terrain = new Terrain(seed, width, height);
   }
 
-//   function handleDiceRoll(event: CustomEvent) {
-//     diceResult = event.detail.result;
-//   }
 </script>
 
 <div class="game-container">
@@ -26,7 +23,7 @@
   <HoleInfo {terrain} on:seedChange={handleSeedChange}/>
  </div>
  <div class="right-column">
-  <Map {terrain} {dice} />
+  <Map {dice} {terrain} />
  </div>
 </div>
 

@@ -1,19 +1,26 @@
 <script lang="ts">
   import { type TerrainSymbol, Terrain } from '$lib/map';
-  import { Dice, Roll } from '$lib/dice';
-  export let terrain: Terrain;
-  export let dice: Dice;
+  import { Dice, Roll } from '$lib/dice.svelte';
   
-  let roll: Roll | null = null;
-  let landingPositions: [number, number][] = [];
+  const { terrain, dice } = $props<{
+    terrain: Terrain;
+    dice: Dice;
+  }>();
   
-  // Subscribe to dice store changes, but only new rolls
-  $: if ($dice.lastRoll !== null && roll?.timestamp !== $dice.lastRoll?.timestamp) {
-    landingPositions = terrain.getLandingPositions($dice.lastRoll.result);
-    roll = $dice.lastRoll;
-  } else {
-    landingPositions = [];
-  }
+  let roll : Roll | null = null;
+  let landingPositions = $state<[number, number][]>([]);
+  let ballPosition = $derived(terrain.ballPosition);
+  
+
+  $effect(() => {
+    if (dice.lastRoll !== null && roll?.timestamp !== dice.lastRoll?.timestamp) {
+      landingPositions = terrain.getLandingPositions(dice.lastRoll.result);
+      roll = new Roll(dice.lastRoll.result);
+      roll.timestamp = dice.lastRoll.timestamp;
+    } else {
+      landingPositions = [];
+    }
+  });
   
 
   // Map terrain types to colors
@@ -63,13 +70,10 @@
   function isLandingPosition(row: number, col: number): boolean {
     return landingPositions.some(([x, y]) => x === col && y === row);
   }
-
-  // Make ball position reactive
-  $: ballPosition = terrain.ballPosition;
   
   function handleTileClick(row: number, col: number) {
-    if (isLandingPosition(row, col) && $dice.lastRoll !== null) {
-      terrain.moveBall($dice.lastRoll.result, [col, row]);
+    if (isLandingPosition(row, col) && dice.lastRoll !== null) {
+      terrain.moveBall(dice.lastRoll.result, [col, row]);
       // Check if new position is on sand, update dice accordingly
       if (terrain.map[row][col] === 's') {
         dice.setMaxRoll(2);
@@ -79,7 +83,6 @@
         dice.setMaxRoll(6);
       }
       landingPositions = [];
-      ballPosition = terrain.ballPosition;
     }
   }
 </script>
@@ -88,18 +91,22 @@
   {#each terrain.map as row, rowIndex}
     <div class="row">
       {#each row as tile, colIndex}
-        {@const corners = getCornerRadii(rowIndex, colIndex, tile)}
+        {@const corners = getCornerRadii(rowIndex, colIndex, tile as TerrainSymbol)}
         {@const isBall = isPositionAtTile(rowIndex, colIndex, ballPosition)}
         {@const isHole = isPositionAtTile(rowIndex, colIndex, terrain.holePosition)}
         {@const isStart = isPositionAtTile(rowIndex, colIndex, terrain.startPosition)}
         {@const isLanding = isLandingPosition(rowIndex, colIndex)}
         <svg 
           viewBox="0 0 10 10" 
-          class={`tile ${isHole ? 'hole' : isStart ? 'start' : terrainColors[tile]} ${isLanding ? 'landing' : ''}`}
+          class:tile={true}
+          class:hole={isHole}
+          class:start={isStart}
+          class:landing={isLanding}
+          class={terrainColors[tile as TerrainSymbol]}
           role="button"
-          aria-label={`${isBall ? 'ball' : isHole ? 'hole' : isStart ? 'start' : terrainColors[tile]} terrain`}
-          on:click={() => handleTileClick(rowIndex, colIndex)}
-          on:keydown={(e) => e.key === 'Enter' && handleTileClick(rowIndex, colIndex)}
+          aria-label={`${isBall ? 'ball' : isHole ? 'hole' : isStart ? 'start' : terrainColors[tile as TerrainSymbol]} terrain`}
+          onclick={() => handleTileClick(rowIndex, colIndex)}
+          onkeydown={(e) => e.key === 'Enter' && handleTileClick(rowIndex, colIndex)}
           tabindex="0"
           focusable="true"
         >
@@ -201,7 +208,8 @@
     fill: #f77;
   }
 
-  .tile.landing rect{
+  .tile.landing rect {
     fill: #f77;
   }
+
 </style> 
