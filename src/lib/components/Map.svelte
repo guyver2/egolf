@@ -27,6 +27,11 @@
 		}
 	});
 
+	$effect(() => {
+		document.documentElement.style.setProperty('--terrain-height', terrain.height.toString());
+		document.documentElement.style.setProperty('--terrain-width', terrain.width.toString());
+	});
+
 	// Map terrain types to colors
 	const terrainColors: Record<TerrainSymbol, string> = {
 		g: 'grass',
@@ -150,6 +155,11 @@
 <style>
 	.map-container {
 		position: relative;
+		width: 100%;
+		overflow: auto;
+		display: flex;
+		justify-content: center;
+		align-items: flex-start;
 	}
 
 	.map {
@@ -160,6 +170,7 @@
 		padding: 10px;
 		border-radius: 4px;
 		box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+		margin: 0 auto;
 	}
 
 	.map.finished {
@@ -171,8 +182,14 @@
 	}
 
 	.tile {
-		width: 32px;
-		height: 32px;
+		width: min(
+			calc((100vh - 180px) / var(--terrain-height)),
+			calc((100vw - 40px) / var(--terrain-width))
+		);
+		height: min(
+			calc((100vh - 180px) / var(--terrain-height)),
+			calc((100vw - 40px) / var(--terrain-width))
+		);
 		transition: transform 0.1s ease;
 	}
 
@@ -236,7 +253,33 @@
 
 	.overlay h1 {
 		color: #ffeaea;
-		font-size: 4em;
+		font-size: clamp(2em, 6vw, 4em);
 		text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+		text-align: center;
+		padding: 0 1rem;
+	}
+
+	@media (hover: none) {
+		.tile:hover {
+			transform: none;
+		}
+
+		.tile.landing {
+			transform: scale(1.1);
+		}
+	}
+
+	/* Mobile adjustments */
+	@media (max-width: 768px) {
+		.tile {
+			width: min(
+				calc((100vh - 240px) / var(--terrain-height)),
+				calc((100vw - 20px) / var(--terrain-width))
+			);
+			height: min(
+				calc((100vh - 240px) / var(--terrain-height)),
+				calc((100vw - 20px) / var(--terrain-width))
+			);
+		}
 	}
 </style>

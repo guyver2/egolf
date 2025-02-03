@@ -311,7 +311,7 @@ export function generateTerrain(seed: string, W: number, H: number): TerrainSymb
 		terrain = paintBlob(terrain, x, y, randInt(10, 30), 'f');
 	}
 	//    Then middle part:
-	for (let i = 0; i < 4; i++) {
+	for (let i = 0; i < Math.floor(H / 6); i++) {
 		const x = randInt(0, W - 1);
 		const y = randInt(Math.floor(H / 4), Math.floor((3 * H) / 4));
 		terrain = paintBlob(terrain, x, y, randInt(10, 30), 'f');
@@ -324,7 +324,7 @@ export function generateTerrain(seed: string, W: number, H: number): TerrainSymb
 	}
 
 	// 3) Randomly paint some sand, trees, or water over the rough, for variety
-	for (let i = 0; i < 7; i++) {
+	for (let i = 0; i < Math.floor(H / 2); i++) {
 		const x = randInt(0, W - 1);
 		const y = randInt(0, H - 1);
 		const r = Math.random();

@@ -73,14 +73,20 @@
 
 <style>
 	.dice-container {
-		margin-top: 20px;
-		text-align: center;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 10px;
+		padding: 0.5rem;
 	}
 
 	.dice {
+		width: clamp(60px, 15vw, 100px);
+		height: clamp(60px, 15vw, 100px);
 		cursor: pointer;
 		transition: transform 0.1s ease-in-out;
 	}
+
 	.dice.locked {
 		cursor: not-allowed;
 	}
@@ -138,16 +144,48 @@
 	}
 
 	.putt-button {
-		margin-top: 10px;
+		margin-top: 5px;
 		background-color: #88908a;
 		color: white;
 		border: none;
-		padding: 5px 10px;
+		padding: 8px 16px;
 		cursor: pointer;
 		border-radius: 5px;
+		min-width: 80px;
 	}
+
 	.putt-button.locked {
 		cursor: not-allowed;
 		background-color: #5a5a5a;
+	}
+
+	/* Add media query for touch devices */
+	@media (hover: none) {
+		.dice:hover {
+			transform: none;
+		}
+
+		.dice:active {
+			transform: scale(0.95);
+		}
+	}
+
+	/* Mobile styles */
+	@media (max-width: 768px) {
+		.dice-container {
+			flex-direction: row;
+			gap: 1rem;
+		}
+
+		.dice {
+			width: 60px;
+			height: 60px;
+		}
+
+		.putt-button {
+			margin-top: 0;
+			padding: 6px 12px;
+			font-size: 0.9rem;
+		}
 	}
 </style>

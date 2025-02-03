@@ -25,45 +25,46 @@
 </script>
 
 <div class="hole-info-container">
-	<p>
-		Seed:
-		{#if editingSeed}
-			<input
-				type="text"
-				maxlength="8"
-				pattern="[a-zA-Z0-9]+"
-				bind:value={seed}
-				onblur={handleSeedSubmit}
-				onkeydown={(e) => e.key === 'Enter' && handleSeedSubmit()}
-			/>
-		{:else}
-			<button type="button" onclick={() => (editingSeed = true)}
-				>{seed.slice(0, 4)}-{seed.slice(4, 8)}</button
+	<div class="main-info">
+		<p>Par: {par}</p>
+		<p>Strokes: {strokes}</p>
+		<p>Distance: {distance}</p>
+	</div>
+	<div class="seed-controls">
+		<p>
+			Seed:
+			{#if editingSeed}
+				<input
+					type="text"
+					maxlength="8"
+					pattern="[a-zA-Z0-9]+"
+					bind:value={seed}
+					onblur={handleSeedSubmit}
+					onkeydown={(e) => e.key === 'Enter' && handleSeedSubmit()}
+				/>
+			{:else}
+				<button type="button" onclick={() => (editingSeed = true)}
+					>{seed.slice(0, 4)}-{seed.slice(4, 8)}</button
+				>
+			{/if}
+		</p>
+		<div class="button-group">
+			<button
+				class="seed-button"
+				onclick={() => {
+					seed = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+					handleSeedSubmit();
+				}}>Random</button
 			>
-		{/if}
-	</p>
-	<p>
-		<button
-			class="seed-button"
-			onclick={() => {
-				seed =
-					Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-				handleSeedSubmit();
-			}}>Random Map!</button
-		>
-	</p>
-	<p>
-		<button
-			class="seed-button"
-			onclick={() => {
-				terrain.regenerate(terrain.seed, terrain.width, terrain.height);
-				dice.reset(8);
-			}}>Retry!</button
-		>
-	</p>
-	<p>Par: {par}</p>
-	<p>Strokes: {strokes}</p>
-	<p>Distance: {distance}</p>
+			<button
+				class="seed-button"
+				onclick={() => {
+					terrain.regenerate(terrain.seed, terrain.width, terrain.height);
+					dice.reset(8);
+				}}>Retry</button
+			>
+		</div>
+	</div>
 </div>
 
 <style>
@@ -72,27 +73,82 @@
 		flex-direction: column;
 		justify-content: flex-start;
 		align-items: flex-start;
-		margin-top: 20px;
-		text-align: center;
+		text-align: left;
 		color: white;
 		gap: 5px;
-		padding-bottom: 20px;
+		padding: 0.5rem;
+		min-width: 120px;
 	}
+
+	.main-info {
+		display: flex;
+		gap: 1rem;
+	}
+
+	.seed-controls {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.button-group {
+		display: flex;
+		gap: 0.5rem;
+	}
+
 	input {
 		background: transparent;
 		border: 1px solid white;
 		color: white;
 		padding: 2px 4px;
-		width: 60px;
+		width: 80px;
+		max-width: 100%;
 	}
 
 	.seed-button {
-		margin-top: 10px;
 		background-color: #99a29b;
 		color: white;
 		border: none;
 		padding: 5px 10px;
 		cursor: pointer;
 		border-radius: 5px;
+		font-size: 0.9rem;
+	}
+
+	/* Mobile styles */
+	@media (max-width: 768px) {
+		.hole-info-container {
+			flex-direction: row;
+			justify-content: space-between;
+			align-items: center;
+			width: 100%;
+			gap: 1rem;
+		}
+
+		.main-info {
+			font-size: 0.9rem;
+		}
+
+		.seed-controls {
+			flex-direction: row;
+			align-items: center;
+		}
+
+		p {
+			margin: 0;
+		}
+	}
+
+	/* Very small screens */
+	@media (max-width: 480px) {
+		.main-info {
+			font-size: 0.8rem;
+			gap: 0.5rem;
+		}
+
+		.seed-button {
+			padding: 4px 8px;
+			font-size: 0.8rem;
+		}
 	}
 </style>
