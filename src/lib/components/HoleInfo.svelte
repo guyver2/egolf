@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { Terrain } from '$lib/map.svelte';
 	import { Dice } from '$lib/dice.svelte';
-	const { terrain, dice } = $props<{ terrain: Terrain; dice: Dice }>();
+	import type { User } from "$lib/routes/+page.server";
+	const { terrain, dice, user } = $props<{ terrain: Terrain; dice: Dice; user: User | undefined }>();
 
 	let seed = $state(terrain.seed); // Default 8-char value
 	let strokes = $derived(terrain.ballPositionHistory.length);
@@ -62,6 +63,25 @@
 					terrain.regenerate(terrain.seed, terrain.width, terrain.height);
 					dice.reset(8);
 				}}>Retry</button
+			>
+			<button
+				class="seed-button"
+				onclick={() => {
+					const holeData = {
+						name: "Random Hole " + Math.random().toString(36).substring(2, 15),
+						seed: terrain.seed,
+						width: terrain.width,
+						height: terrain.height,
+						authorId: user?.id
+					};
+					fetch('/api/holes', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json'
+						},
+						body: JSON.stringify(holeData)
+					});
+				}}>Save</button
 			>
 		</div>
 	</div>

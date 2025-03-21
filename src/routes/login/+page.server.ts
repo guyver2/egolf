@@ -1,7 +1,13 @@
 import { fail, redirect } from '@sveltejs/kit';
 import prisma from "$lib/server/prisma";
 import * as bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 import type { Actions } from './$types';
+
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+    throw new Error('JWT_SECRET environment variable is not set');
+}
 
 export const actions = {
     default: async ({ request, cookies }) => {
@@ -25,19 +31,45 @@ export const actions = {
             return fail(400, { email, credentials: true });
         }
 
-        const userPassword = await bcrypt.compare(password, user.password);
+        const userPassword = bcrypt.compare(password, user.password);
 
         if (!userPassword) {
             return fail(400, { email, credentials: true });
         }
 
-        // Set a cookie to maintain the session
-        cookies.set('sessionId', user.id.toString(), {
+        // Create JWT payload
+        const payload = {
+            userId: user.id,
+            email: user.email
+        };
+
+        // Generate JWT token
+        const token = jwt.sign(payload, JWT_SECRET, {
+            expiresIn: '1d' // 1 day
+        });
+
+        // Delete any existing tokens for this user
+        await prisma.accessToken.deleteMany({
+            where: {
+                userId: user.id
+            }
+        });
+
+        // Store the token in the database
+        await prisma.accessToken.create({
+            data: {
+                token,
+                userId: user.id,
+            }
+        });
+
+        // Set a cookie with the JWT token
+        cookies.set('access_token', token, {
             path: '/',
             httpOnly: true,
             sameSite: 'strict',
             secure: process.env.NODE_ENV === 'production',
-            maxAge: 60 * 60 * 24 * 30, // 30 days
+            maxAge: 60 * 60 * 24, // 1 day in seconds
         });
 
         throw redirect(303, '/');

@@ -71,7 +71,7 @@ export class Terrain {
 		let ballPlaced = false;
 		for (let attempts = 0; attempts < 100 && !ballPlaced; attempts++) {
 			const startX = randInt(0, this.width - 1);
-			for (let y = this.height - 1; y >= Math.floor((3 * this.height) / 4); y--) {
+			for (let y = this.height - 1; y >= Math.floor(0.9 * this.height); y--) {
 				if (this.map[y][startX] === 'f') {
 					//this.map[y][startX] = 'b';
 					ballPlaced = true;
@@ -93,7 +93,7 @@ export class Terrain {
 		let holePlaced = false;
 		for (let attempts = 0; attempts < 100 && !holePlaced; attempts++) {
 			const startX = randInt(0, this.width - 1);
-			for (let y = 0; y < Math.floor(this.height / 4); y++) {
+			for (let y = 0; y < Math.floor(this.height / 10); y++) {
 				if (this.map[y][startX] === 'f') {
 					//this.map[y][startX] = 'h';
 					holePlaced = true;
@@ -113,23 +113,25 @@ export class Terrain {
 
 	public getLandingPositions(roll: number): [number, number][] {
 		const directions = [
-			[-1, -1],
+			[-0.707, -0.707],
 			[0, -1],
-			[1, -1], // NW, N, NE
+			[0.707, -0.707], // NW, N, NE
 			[-1, 0],
 			[1, 0], // W, E
-			[-1, 1],
+			[-0.707, 0.707],
 			[0, 1],
-			[1, 1] // SW, S, SE
+			[0.707, 0.707] // SW, S, SE
 		];
 
 		const validPositions: [number, number][] = [];
 		const [startX, startY] = this.ballPosition;
 
 		for (const [dx, dy] of directions) {
-			// Calculate target position
-			const targetX = startX + dx * roll;
-			const targetY = startY + dy * roll;
+			// Calculate target position and round to nearest integer
+			const offsetX = dx > 0 ? Math.ceil(dx * roll) : Math.floor(dx * roll);
+			const offsetY = dy > 0 ? Math.ceil(dy * roll) : Math.floor(dy * roll);
+			const targetX = startX + offsetX;
+			const targetY = startY + offsetY;
 
 			// Check if position is in bounds
 			if (targetX >= 0 && targetX < this.width && targetY >= 0 && targetY < this.height) {

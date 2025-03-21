@@ -9,6 +9,8 @@ datasource db {
 
 // Add your models here 
 
+
+// User model to store user information
 model User {
   id          Int           @id @default(autoincrement())
   email       String        @unique
@@ -17,6 +19,9 @@ model User {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   AccessToken AccessToken[]
+  holes       Hole[]
+  courses     Course[]
+  holePlays   HolePlay[]
 }
 
 model AccessToken {
@@ -24,6 +29,63 @@ model AccessToken {
   token     String   @unique
   userId    Int
   user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  expiresAt DateTime @default(dbgenerated("(datetime('now', '+1 day'))"))
+}
+
+// Hole model to store hole information (size, seed, name, author, ...)
+// a hole can have a author or not (for system generated holes), they can also be part of a course or not
+model Hole {
+  id        Int      @id @default(autoincrement())
+  name      String
+  seed      String
+  width     Int
+  height    Int
+  authorId  Int?
+  author    User?    @relation(fields: [authorId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  holePlays HolePlay[]
+  courses   Course[]
+
+  @@unique([width, height, seed])
+}
+
+// Course model, a list of holes put together
+model Course {
+  id        Int      @id @default(autoincrement())
+  name      String
+  holes     Hole[]
+  authorId  Int?
+  author    User?    @relation(fields: [authorId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+// HolePlay model to store the play of a hole by a user. 
+// A hole play is a list of strokes in sequence. The same user can play the same hole multiple times.
+model HolePlay {
+  id        Int      @id @default(autoincrement())
+  holeId    Int
+  hole      Hole     @relation(fields: [holeId], references: [id])
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  strokes   Stroke[]
+}
+
+// Stroke model to store the various strokes of a hole play.
+model Stroke {
+  id        Int      @id @default(autoincrement())
+  holePlayId Int
+  holePlay  HolePlay @relation(fields: [holePlayId], references: [id])
+  startX    Int
+  startY    Int
+  endX      Int
+  endY      Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

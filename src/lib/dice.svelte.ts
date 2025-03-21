@@ -9,6 +9,7 @@ export class Roll {
 
 export class Dice {
 	maxRoll = $state(6);
+	minRoll = $state(1);
 	lastRoll = $state<Roll | null>(null);
 	locked = $state(false);
 

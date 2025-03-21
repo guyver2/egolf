@@ -3,16 +3,24 @@
 	import Map from '$lib/components/Map.svelte';
 	import Club from '$lib/components/Club.svelte';
 	import HoleInfo from '$lib/components/HoleInfo.svelte';
+	import Navbar from '$lib/components/Navbar.svelte';
 	import { Dice } from '$lib/dice.svelte';
-	import { page } from '$app/state';
+	import type { PageProps } from './$types';
 
-	const width = 18;
-	const height = 25;
+	const width = 10;
+	const height = 15;
 	// Get seed from URL path or use default
-	$: seed = 'not00set';
-	$: terrain = new Terrain(seed, width, height);
-	const dice = new Dice(8);
+	const seed = 'not00set';
+	const terrain = $state(new Terrain(seed, width, height));
+	const dice = $state(new Dice(8));
+
+	let { data }: PageProps = $props();
+
+    const { isLoggedIn, user } = data;
+	
 </script>
+
+<Navbar {isLoggedIn} {user} />
 
 <div class="game-container">
 	<div class="content-wrapper">
@@ -21,14 +29,16 @@
 		</div>
 		<div class="controls-container">
 			<Club {dice} />
-			<HoleInfo {terrain} {dice} />
+			<HoleInfo {terrain} {dice} {user}/>
 		</div>
 	</div>
 </div>
 
 <style>
 	.game-container {
-		min-height: 100vh;
+		margin-top: 60px; /* Add top margin equal to nav-bar height */
+		min-height: calc(100vh - 60px);
+		max-height: calc(100vh - 60px);
 		background-color: #1a1a1a;
 		padding: 2rem 1rem;
 		display: flex;
@@ -57,13 +67,16 @@
 		flex: 1;
 		display: flex;
 		justify-content: center;
+		max-height: 90vh;
+		max-width: 50vw;
+		overflow-y: auto;
 	}
 
 	/* Responsive layout for screens smaller than 768px */
 	@media (max-width: 768px) {
 		.game-container {
 			padding: 0;
-			height: 100vh;
+			height: calc(100vh - 60px);
 			overflow: hidden;
 		}
 
@@ -79,6 +92,8 @@
 			overflow-y: auto;
 			padding: 0.5rem;
 			padding-bottom: 120px; /* Add space for fixed controls */
+			max-width: 100%; /* Remove 50vw limit on mobile */
+			max-height: 85vh;
 		}
 
 		.controls-container {
@@ -94,6 +109,7 @@
 			padding: 0.75rem;
 			box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
 			z-index: 100;
+			max-height: 20vh;
 		}
 	}
 
