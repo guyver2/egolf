@@ -5,7 +5,7 @@
 	import HoleInfo from '$lib/components/HoleInfo.svelte';
 	import Navbar from '$lib/components/Navbar.svelte';
 	import { Dice } from '$lib/dice.svelte';
-	import type { PageProps } from './$types';
+	import type { LayoutProps } from './$types';
 
 	const width = 10;
 	const height = 15;
@@ -14,10 +14,8 @@
 	const terrain = $state(new Terrain(seed, width, height));
 	const dice = $state(new Dice(8));
 
-	let { data }: PageProps = $props();
-
+	let { data }: LayoutProps = $props();
     const { isLoggedIn, user } = data;
-	
 </script>
 
 <Navbar {isLoggedIn} {user} />

@@ -1,10 +1,12 @@
 <script lang="ts">
+	import type { LayoutProps } from './$types';
 	import '../app.css';
 	import { page } from '$app/state';
 	import Navbar from '$lib/components/Navbar.svelte';
-	let { children } = $props();
-
-	const isLoggedIn = $state(false);
+	
+	
+	let { data, children }: LayoutProps = $props();
+	const { isLoggedIn, user } = data;
 
 </script>
 
@@ -14,6 +16,6 @@
 </svelte:head>
 
 
-<Navbar {isLoggedIn} />
+<Navbar {isLoggedIn} {user} />
 
 {@render children()}

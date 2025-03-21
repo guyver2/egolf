@@ -1,12 +1,11 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
     import { invalidateAll } from "$app/navigation";
-    import type { User } from "$lib/routes/+page.server";
+    import type { User } from "$types";
     let { isLoggedIn, user } = $props<{
         isLoggedIn: boolean;
         user: User | undefined;
     }>();
-    console.log("logged in", isLoggedIn);
 
     const logout = async () => {
         const formData = new FormData();
@@ -42,7 +41,7 @@
             <a href="/login" class="auth-button">Login</a>
             <a href="/signup" class="auth-button primary">Sign Up</a>
         {:else}
-            <button type="submit" class="auth-button" onclick={logout}>Logout {user.name}</button>
+            <button type="submit" class="auth-button" onclick={logout}>Logout {user?.name}</button>
         {/if}
     </div>
 </div>

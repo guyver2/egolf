@@ -1,4 +1,4 @@
-import type { PageServerLoad } from './$types';
+import type { LayoutServerLoad } from './$types';
 import prisma from "$lib/server/prisma";
 
 
@@ -8,7 +8,7 @@ export type User = {
     name: string;
 }
 
-export const load: PageServerLoad = async ({ cookies }) => {
+export const load: LayoutServerLoad = async ({ cookies }) => {
     const accessToken = cookies.get('access_token');
     
     let user = null;
@@ -18,17 +18,19 @@ export const load: PageServerLoad = async ({ cookies }) => {
             where: { token: accessToken },
             include: { user: true }
         });
-
-        console.log("tokenData", tokenData);
         
         if (tokenData && tokenData.expiresAt > new Date()) {
             user = tokenData.user;
         }
     }
-    console.log("accessToken", accessToken);
-    console.log("user", user);
+    // console.log("accessToken", accessToken);
+    // console.log("user", user);
     
     return {
+        meta: {
+            title: 'eGolf',
+            description: 'A minimalist golf game built with SvelteKit'
+        },
         isLoggedIn: !!user,
         user: user ? {
             id: user.id,
