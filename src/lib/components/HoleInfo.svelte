@@ -1,8 +1,14 @@
 <script lang="ts">
 	import { Terrain } from '$lib/map.svelte';
 	import { Dice } from '$lib/dice.svelte';
-	import type { User } from "$lib/routes/+page.server";
-	const { terrain, dice, user } = $props<{ terrain: Terrain; dice: Dice; user: User | undefined }>();
+	import type { User } from "./$types";
+	const { terrain, dice, user, showRandomButton=true, showSaveButton=true } = $props<{ 
+		terrain: Terrain; 
+		dice: Dice; 
+		user: User | undefined; 
+		showRandomButton?: boolean;
+		showSaveButton?: boolean;
+	}>();
 
 	let seed = $state(terrain.seed); // Default 8-char value
 	let strokes = $derived(terrain.ballPositionHistory.length);
@@ -50,20 +56,25 @@
 			{/if}
 		</p>
 		<div class="button-group">
+			{#if showRandomButton}
 			<button
 				class="seed-button"
 				onclick={() => {
 					seed = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 					handleSeedSubmit();
-				}}>Random</button
-			>
+				}}>
+				Random
+			</button>
+			{/if}
 			<button
 				class="seed-button"
 				onclick={() => {
 					terrain.regenerate(terrain.seed, terrain.width, terrain.height);
 					dice.reset(8);
-				}}>Retry</button
-			>
+				}}>
+				Retry
+			</button>
+			{#if showSaveButton}
 			<button
 				class="seed-button"
 				onclick={() => {
@@ -81,8 +92,10 @@
 						},
 						body: JSON.stringify(holeData)
 					});
-				}}>Save</button
-			>
+				}}>
+				Save
+			</button>
+			{/if}
 		</div>
 	</div>
 </div>

@@ -1,7 +1,8 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
     import { invalidateAll } from "$app/navigation";
-    import type { User } from "$types";
+    import type { User } from "./$types";
+    
     let { isLoggedIn, user } = $props<{
         isLoggedIn: boolean;
         user: User | undefined;

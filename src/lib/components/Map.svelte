@@ -1,11 +1,16 @@
 <script lang="ts">
 	import { type TerrainSymbol, Terrain } from '$lib/map.svelte';
 	import { Dice, Roll } from '$lib/dice.svelte';
+	import type { User } from "$types";
 
-	const { terrain, dice } = $props<{
+	const { terrain, dice, allowSave=false, user } = $props<{
 		terrain: Terrain;
 		dice: Dice;
+		allowSave?: boolean;
+		user: User | undefined;
 	}>();
+
+	console.log("user", user);
 
 	let roll: Roll | null = null;
 	let landingPositions = $state<[number, number][]>([]);
@@ -100,6 +105,25 @@
 			}
 		}
 	}
+
+	async function saveHole() {
+		console.log('saveHole');
+		let strokes = terrain.ballPositionHistory
+		strokes.push(terrain.ballPosition);
+		const body = {
+			holeId: terrain.id,
+			userId: user?.id,
+			strokes: strokes,
+		};
+		const holePlay = await fetch('/api/holeplays', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(body)
+		}).then(res => res.json());
+		console.log(holePlay);
+	}
 </script>
 
 <div class="map-container">
@@ -155,6 +179,9 @@
 	{#if finished}
 		<div class="overlay">
 			<h1>Congratulations!</h1>
+			{#if allowSave}
+				<button onclick={saveHole}>Save Hole</button>
+			{/if}
 		</div>
 	{/if}
 </div>
@@ -260,6 +287,7 @@
 		justify-content: center;
 		align-items: center;
 		z-index: 10;
+		flex-direction: column;
 	}
 
 	.overlay h1 {
@@ -268,6 +296,16 @@
 		text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 		text-align: center;
 		padding: 0 1rem;
+	}
+
+	.overlay button {
+		background-color: #99a29b;
+		color: white;
+		border: none;
+		padding: 5px 10px;
+		cursor: pointer;
+		border-radius: 5px;
+		font-size: 0.9rem;
 	}
 
 	@media (hover: none) {

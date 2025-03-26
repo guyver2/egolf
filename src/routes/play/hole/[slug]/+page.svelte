@@ -3,28 +3,33 @@
 	import Map from '$lib/components/Map.svelte';
 	import Club from '$lib/components/Club.svelte';
 	import HoleInfo from '$lib/components/HoleInfo.svelte';
+	import Navbar from '$lib/components/Navbar.svelte';
 	import { Dice } from '$lib/dice.svelte';
 	import type { PageProps } from './$types';
 
-	const width = 10;
-	const height = 15;
-	// Get seed from URL path or use default
-	const seed = 'not00set';
-	const terrain = $state(new Terrain(seed, width, height));
-	const dice = $state(new Dice(8));
-
 	let { data }: PageProps = $props();
-	let { user } = data;
+	const { isLoggedIn, user, hole } = data;
+	const width = hole.width;
+	const height = hole.height;
+	const seed = hole.seed;
+	const terrain = $state(new Terrain(seed, width, height, hole.id));
+	const dice = $state(new Dice(8));
+	const showRandomButton = false;
+	const showSaveButton = false;
+	const allowSave = true;
+	
 </script>
+
+<Navbar {isLoggedIn} {user} />
 
 <div class="game-container">
 	<div class="content-wrapper">
 		<div class="map-container">
-			<Map {dice} {terrain} />
+			<Map {dice} {terrain} {allowSave} {user} />
 		</div>
 		<div class="controls-container">
 			<Club {dice} />
-			<HoleInfo {terrain} {dice} {user}/>
+			<HoleInfo {terrain} {dice} {user} {showRandomButton} {showSaveButton}/>
 		</div>
 	</div>
 </div>

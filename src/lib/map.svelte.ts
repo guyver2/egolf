@@ -15,6 +15,7 @@ function inBounds(x: number, y: number, W: number, H: number) {
 }
 
 export class Terrain {
+	id = $state(0);
 	map = $state<TerrainSymbol[][]>([]);
 	seed = $state('');
 	ballPosition = $state<[number, number]>([0, 0]);
@@ -25,7 +26,8 @@ export class Terrain {
 	height = $state(0);
 	par = $state(0);
 
-	constructor(seed: string, width: number, height: number) {
+	constructor(seed: string, width: number, height: number, id: number=-1) {
+		this.id = id;
 		this.width = width;
 		this.height = height;
 		this.par = Math.floor(height / 5) + 1;

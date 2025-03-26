@@ -6,7 +6,7 @@
 	
 	
 	let { data, children }: LayoutProps = $props();
-	const { isLoggedIn, user } = data;
+	let { isLoggedIn, user } = data;
 
 </script>
 

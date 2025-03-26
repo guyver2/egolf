@@ -1,6 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
 import prisma from "$lib/server/prisma";
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import type { Actions } from './$types';
 

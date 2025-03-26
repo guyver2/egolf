@@ -21,7 +21,7 @@
                     <p>Created: {new Date(hole.createdAt).toDateString()}</p>
                 </div>
                 <div class="hole-actions">
-                    <a class="button" href={`/hole/${hole.id}`}>Play</a>
+                    <a class="button" href={`/play/hole/${hole.id}`}>Play</a>
                     <a class="button" href={`/courses?holeId=${hole.id}`}>Associated Courses</a>
                 </div>
             </div>
