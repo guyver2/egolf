@@ -1,0 +1,25 @@
+services:
+  backend:
+    build: ./backend
+    environment:
+      - DATABASE_PATH=/data/egolf.db
+      - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
+      - REGISTRATION_ENABLED=${REGISTRATION_ENABLED:-true}
+    volumes:
+      - db-data:/data
+      - thumbnail-cache:/app/terrain_cache
+    expose:
+      - "8000"
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "${PORT:-8080}:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  db-data:
+  thumbnail-cache:

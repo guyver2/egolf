@@ -1,13 +1,22 @@
+import os
+
 from fastapi import APIRouter, HTTPException, Depends, status
 from schemas import SignupRequest, LoginRequest, UserResponse, TokenResponse
 from auth import hash_password, verify_password, create_access_token, require_user
 from db import get_db
+
+REGISTRATION_ENABLED = os.environ.get("REGISTRATION_ENABLED", "true").lower() in ("true", "1", "yes")
 
 router = APIRouter()
 
 
 @router.post("/signup", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def signup(req: SignupRequest):
+    if not REGISTRATION_ENABLED:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Registration is currently disabled",
+        )
     with get_db() as conn:
         # Check if username already exists
         existing = conn.execute(

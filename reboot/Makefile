@@ -11,7 +11,8 @@ UVICORN      = $(VENV)/bin/uvicorn
 .PHONY: help install install-backend install-frontend \
         run-backend run-frontend run \
         migrate migrate-up migrate-down migrate-status \
-        typecheck clean
+        typecheck clean \
+        docker-build docker-up docker-down docker-logs
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -56,6 +57,20 @@ migrate-down: ## Rollback the last applied migration
 
 migrate-status: ## Show migration status
 	cd $(BACKEND_DIR) && $(abspath $(PYTHON)) migrate.py --status
+
+# ── Docker ───────────────────────────────────────────────
+
+docker-build: ## Build Docker images
+	docker compose build
+
+docker-up: ## Start the app in Docker (port 8080)
+	docker compose up -d
+
+docker-down: ## Stop the Docker containers
+	docker compose down
+
+docker-logs: ## Tail Docker container logs
+	docker compose logs -f
 
 # ── Utilities ────────────────────────────────────────────
 
