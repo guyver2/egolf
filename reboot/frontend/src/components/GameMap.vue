@@ -202,22 +202,20 @@ function tilePath(corners: { tl: number; tr: number; bl: number; br: number }): 
 <style scoped>
 .map-wrapper {
   position: relative;
-  width: 70%;
+  width: 100%;
+  height: 100%;
   display: flex;
-  justify-content: flex-start;
-  align-items: flex-start;
-  margin: 0 auto;
-  border: 1px solid #ccc;
+  justify-content: center;
+  align-items: center;
 }
 
 .map {
-  display: flex;
-  flex-direction: column;
+  display: block;
   border: 2px solid #333;
-  padding: 10px;
   border-radius: 4px;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-  margin: 0 auto;
+  max-width: 100%;
+  max-height: 100%;
   width: auto;
   height: auto;
 }
@@ -255,7 +253,7 @@ function tilePath(corners: { tl: number; tr: number; bl: number; br: number }): 
 
 .overlay h1 {
   color: #ffeaea;
-  font-size: clamp(2em, 6vw, 4em);
+  font-size: clamp(1.5em, 5vw, 4em);
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
   text-align: center;
   padding: 0 1rem;
@@ -263,7 +261,7 @@ function tilePath(corners: { tl: number; tr: number; bl: number; br: number }): 
 
 .stroke-count {
   color: #ccc;
-  font-size: 1.2rem;
+  font-size: clamp(0.9rem, 2.5vw, 1.2rem);
   margin-top: 0.5rem;
 }
 
@@ -272,14 +270,19 @@ function tilePath(corners: { tl: number; tr: number; bl: number; br: number }): 
   background-color: #99a29b;
   color: white;
   border: none;
-  padding: 8px 16px;
+  padding: 10px 20px;
   cursor: pointer;
   border-radius: 5px;
   font-size: 1rem;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .save-btn:hover {
   background-color: #aab4ac;
+}
+
+.save-btn:active {
+  background-color: #bbc4bd;
 }
 
 .saved-msg {
@@ -289,8 +292,11 @@ function tilePath(corners: { tl: number; tr: number; bl: number; br: number }): 
 }
 
 @media (max-width: 768px) {
-  .map-wrapper {
-    width: 100%;
+  .map {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    box-shadow: none;
   }
 }
 </style>

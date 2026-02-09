@@ -219,12 +219,13 @@ onUnmounted(() => {
 
 <style scoped>
 .page-container {
-  margin-top: 60px;
+  margin-top: 56px;
   background-color: #1a1a1a;
-  padding: 2rem 1rem;
+  padding: 1.5rem 1rem;
   display: flex;
   flex-direction: column;
   align-items: center;
+  min-height: calc(100vh - 56px);
 }
 
 .loading, .error {
@@ -240,7 +241,7 @@ onUnmounted(() => {
 }
 
 .replay-header h2 {
-  font-size: 1.4rem;
+  font-size: clamp(1.1rem, 3.5vw, 1.4rem);
   margin-bottom: 0.25rem;
 }
 
@@ -252,13 +253,14 @@ onUnmounted(() => {
 .content-wrapper {
   display: flex;
   gap: 20px;
-  max-width: 1200px;
+  max-width: 1000px;
   width: 100%;
   align-items: flex-start;
 }
 
 .map-area {
   flex: 1;
+  min-width: 0;
   display: flex;
   justify-content: center;
 }
@@ -268,11 +270,12 @@ onUnmounted(() => {
   flex-direction: column;
   background-color: #272727;
   gap: 1rem;
-  padding: 1.5rem;
+  padding: 1.25rem;
   border-radius: 8px;
   width: 220px;
+  flex-shrink: 0;
   position: sticky;
-  top: 80px;
+  top: 76px;
 }
 
 .step-display {
@@ -299,10 +302,15 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   transition: background-color 0.2s;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .playback-controls button:hover:not(:disabled) {
   background-color: #555;
+}
+
+.playback-controls button:active:not(:disabled) {
+  background-color: #666;
 }
 
 .playback-controls button:disabled {
@@ -330,6 +338,7 @@ onUnmounted(() => {
   border-radius: 4px;
   font-size: 0.8rem;
   transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .speed-controls button.active {
@@ -350,19 +359,68 @@ onUnmounted(() => {
 }
 
 @media (max-width: 768px) {
+  .page-container {
+    padding: 0.5rem 0;
+    padding-bottom: 140px;
+  }
+
+  .replay-header {
+    padding: 0 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .meta {
+    font-size: 0.8rem;
+  }
+
   .content-wrapper {
     flex-direction: column;
+    gap: 0;
   }
+
   .map-area {
-    max-width: 100%;
-    max-height: 60vh;
+    width: 100%;
   }
+
   .controls-panel {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
     width: 100%;
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: center;
-    align-self: stretch;
+    align-items: center;
+    border-radius: 12px 12px 0 0;
+    padding: 0.75rem 1rem;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+    z-index: 100;
+    top: auto;
+    gap: 0.5rem 1rem;
+  }
+
+  .step-display {
+    font-size: 0.9rem;
+  }
+
+  .playback-controls button {
+    width: 44px;
+    height: 44px;
+  }
+
+  .speed-controls {
+    gap: 0.3rem;
+  }
+
+  .speed-controls button {
+    padding: 5px 10px;
+    font-size: 0.8rem;
+  }
+
+  .finished-msg {
+    width: 100%;
+    font-size: 0.9rem;
   }
 }
 </style>

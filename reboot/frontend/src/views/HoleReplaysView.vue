@@ -118,8 +118,8 @@ watch(page, fetchReplays)
 
 <style scoped>
 .page-container {
-  margin-top: 60px;
-  padding: 2rem 1rem;
+  margin-top: 56px;
+  padding: 1.5rem 1rem;
   max-width: 700px;
   margin-left: auto;
   margin-right: auto;
@@ -130,7 +130,7 @@ watch(page, fetchReplays)
 }
 
 .header h1 {
-  font-size: 1.4rem;
+  font-size: clamp(1.1rem, 3.5vw, 1.4rem);
   margin-bottom: 0.25rem;
 }
 
@@ -165,7 +165,7 @@ watch(page, fetchReplays)
 .replay-row {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem;
   padding: 0.75rem 1rem;
   background-color: #272727;
   border-radius: 6px;
@@ -175,40 +175,48 @@ watch(page, fetchReplays)
 .rank {
   color: #888;
   font-weight: bold;
-  min-width: 36px;
+  min-width: 32px;
 }
 
 .player {
   flex: 1;
   color: #ddd;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .strokes {
   color: #7c7;
   font-weight: 600;
-  min-width: 90px;
-  text-align: right;
+  white-space: nowrap;
 }
 
 .date {
   color: #888;
   font-size: 0.85rem;
-  min-width: 90px;
-  text-align: right;
+  white-space: nowrap;
 }
 
 .watch-btn {
   background-color: #444;
   color: white;
-  padding: 0.35rem 0.75rem;
+  padding: 0.4rem 0.75rem;
   border-radius: 4px;
   text-decoration: none;
   font-size: 0.85rem;
   transition: background-color 0.2s;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
 }
 
 .watch-btn:hover {
   background-color: #555;
+}
+
+.watch-btn:active {
+  background-color: #666;
 }
 
 .pagination {
@@ -217,15 +225,18 @@ watch(page, fetchReplays)
   align-items: center;
   gap: 1rem;
   margin-top: 2rem;
+  padding-bottom: 1rem;
 }
 
 .pagination button {
   background-color: #444;
   color: white;
   border: none;
-  padding: 0.5rem 1rem;
+  padding: 0.6rem 1.2rem;
   border-radius: 4px;
   cursor: pointer;
+  font-size: 0.9rem;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .pagination button:disabled {
@@ -235,15 +246,40 @@ watch(page, fetchReplays)
 
 .pagination span {
   color: #ccc;
+  font-size: 0.9rem;
 }
 
 @media (max-width: 600px) {
+  .page-container {
+    padding: 1rem 0.75rem;
+  }
+
   .replay-row {
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 0.4rem 0.75rem;
+    padding: 0.65rem 0.75rem;
   }
+
+  .rank {
+    min-width: 28px;
+    font-size: 0.9rem;
+  }
+
+  .player {
+    font-size: 0.9rem;
+  }
+
+  .strokes {
+    font-size: 0.85rem;
+  }
+
   .date {
     display: none;
+  }
+
+  .watch-btn {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.8rem;
   }
 }
 </style>

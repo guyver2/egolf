@@ -97,10 +97,11 @@ function dotPositions(result: number): Array<{ cx: string; cy: string }> {
 }
 
 .dice {
-  width: clamp(60px, 15vw, 100px);
-  height: clamp(60px, 15vw, 100px);
+  width: clamp(50px, 12vw, 100px);
+  height: clamp(50px, 12vw, 100px);
   cursor: pointer;
   transition: transform 0.1s ease-in-out;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .dice.locked {
@@ -134,16 +135,21 @@ rect.D8 { fill: #3a3; stroke: #5a5a5a; stroke-width: 2; }
   background-color: #88908a;
   color: white;
   border: none;
-  padding: 8px 16px;
+  padding: 10px 20px;
   cursor: pointer;
   border-radius: 5px;
   min-width: 80px;
   font-size: 0.9rem;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .putt-button.locked {
   cursor: not-allowed;
   background-color: #5a5a5a;
+}
+
+.putt-button:active:not(.locked) {
+  background-color: #9aa09c;
 }
 
 .no-moves {
@@ -155,16 +161,20 @@ rect.D8 { fill: #3a3; stroke: #5a5a5a; stroke-width: 2; }
 @media (max-width: 768px) {
   .dice-container {
     flex-direction: row;
-    gap: 1rem;
+    gap: 0.75rem;
+    padding: 0.25rem;
   }
   .dice {
-    width: 60px;
-    height: 60px;
+    width: 52px;
+    height: 52px;
   }
   .putt-button {
     margin-top: 0;
-    padding: 6px 12px;
+    padding: 8px 14px;
     font-size: 0.9rem;
+  }
+  .no-moves {
+    font-size: 0.75rem;
   }
 }
 </style>

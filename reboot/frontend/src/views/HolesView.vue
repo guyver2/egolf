@@ -62,7 +62,7 @@ watch(page, fetchHoles)
           <h2>{{ hole.name }}</h2>
           <p>Size: {{ hole.width }}x{{ hole.height }}</p>
           <p>Author: {{ hole.author_name || 'System' }}</p>
-          <p>Created: {{ new Date(hole.created_at).toDateString() }}</p>
+          <p class="date-text">{{ new Date(hole.created_at).toDateString() }}</p>
         </div>
         <div class="hole-actions">
           <router-link :to="`/play/hole/${hole.id}`" class="button">Play</router-link>
@@ -81,8 +81,8 @@ watch(page, fetchHoles)
 
 <style scoped>
 .page-container {
-  margin-top: 60px;
-  padding: 2rem 1rem;
+  margin-top: 56px;
+  padding: 1.5rem 1rem;
   max-width: 800px;
   margin-left: auto;
   margin-right: auto;
@@ -101,7 +101,7 @@ h1 {
 .holes-grid {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .hole-card {
@@ -115,7 +115,7 @@ h1 {
 }
 
 .hole-preview {
-  width: 80px;
+  width: 72px;
   height: auto;
   border-radius: 4px;
   border: 1px solid #555;
@@ -129,20 +129,29 @@ h1 {
 }
 
 .hole-info h2 {
-  font-size: 1.1rem;
-  margin-bottom: 0.25rem;
+  font-size: 1.05rem;
+  margin-bottom: 0.2rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .hole-info p {
   color: #aaa;
-  font-size: 0.9rem;
-  margin: 0.15rem 0;
+  font-size: 0.85rem;
+  margin: 0.1rem 0;
+}
+
+.date-text {
+  font-size: 0.8rem !important;
+  color: #777 !important;
 }
 
 .hole-actions {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  flex-shrink: 0;
 }
 
 .button {
@@ -153,10 +162,16 @@ h1 {
   border-radius: 4px;
   text-align: center;
   transition: background-color 0.2s;
+  font-size: 0.9rem;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .button:hover {
   background-color: #555;
+}
+
+.button:active {
+  background-color: #666;
 }
 
 .button-secondary {
@@ -175,15 +190,18 @@ h1 {
   align-items: center;
   gap: 1rem;
   margin-top: 2rem;
+  padding-bottom: 1rem;
 }
 
 .pagination button {
   background-color: #444;
   color: white;
   border: none;
-  padding: 0.5rem 1rem;
+  padding: 0.6rem 1.2rem;
   border-radius: 4px;
   cursor: pointer;
+  font-size: 0.9rem;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .pagination button:disabled {
@@ -193,5 +211,47 @@ h1 {
 
 .pagination span {
   color: #ccc;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 600px) {
+  .page-container {
+    padding: 1rem 0.75rem;
+  }
+
+  .hole-card {
+    flex-wrap: wrap;
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+
+  .hole-preview {
+    width: 56px;
+  }
+
+  .hole-info {
+    flex: 1;
+    min-width: calc(100% - 56px - 0.75rem);
+  }
+
+  .hole-info h2 {
+    font-size: 0.95rem;
+  }
+
+  .hole-info p {
+    font-size: 0.8rem;
+  }
+
+  .hole-actions {
+    flex-direction: row;
+    width: 100%;
+    gap: 0.5rem;
+  }
+
+  .button {
+    flex: 1;
+    padding: 0.5rem;
+    font-size: 0.85rem;
+  }
 }
 </style>

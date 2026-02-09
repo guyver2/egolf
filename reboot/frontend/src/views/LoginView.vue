@@ -83,15 +83,18 @@ label {
   display: block;
   color: #ffffff;
   margin-bottom: 0.5rem;
+  font-size: 0.95rem;
 }
 
 input {
   width: 100%;
-  padding: 0.5rem;
+  padding: 0.6rem;
   border: 1px solid #444;
   border-radius: 4px;
   background-color: #333;
   color: #ffffff;
+  font-size: 1rem;
+  -webkit-appearance: none;
 }
 
 input:focus {
@@ -109,10 +112,15 @@ button {
   cursor: pointer;
   font-size: 1rem;
   margin-top: 1rem;
+  -webkit-tap-highlight-color: transparent;
 }
 
 button:hover {
   background-color: #5a5a5a;
+}
+
+button:active {
+  background-color: #666;
 }
 
 .error {
@@ -134,5 +142,17 @@ button:hover {
 
 .signup-link a:hover {
   color: #ccc;
+}
+
+@media (max-width: 480px) {
+  .page-container {
+    padding: 1rem 0.75rem;
+    align-items: flex-start;
+    padding-top: 80px;
+  }
+
+  .form-container {
+    padding: 1.5rem;
+  }
 }
 </style>

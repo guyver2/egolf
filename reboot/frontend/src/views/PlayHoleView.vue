@@ -51,28 +51,36 @@ onMounted(async () => {
 
 <style scoped>
 .game-container {
-  margin-top: 60px;
+  margin-top: 56px;
   background-color: #1a1a1a;
-  padding: 2rem 1rem;
+  height: calc(100vh - 56px);
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
+  overflow: hidden;
 }
 
 .loading, .error {
   color: #ccc;
   font-size: 1.2rem;
-  margin-top: 4rem;
+  margin: 4rem auto;
 }
 
 .error { color: #ff5757; }
 
 .content-wrapper {
   display: flex;
-  gap: 20px;
-  max-width: 1200px;
+  gap: 12px;
   width: 100%;
-  align-items: flex-start;
+  height: 100%;
+  padding: 8px;
+}
+
+.map-container {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .controls-container {
@@ -83,27 +91,23 @@ onMounted(async () => {
   padding: 1rem;
   border-radius: 8px;
   width: 200px;
-  position: sticky;
-  top: 80px;
-}
-
-.map-container {
-  flex: 1;
-  display: flex;
-  justify-content: center;
+  flex-shrink: 0;
+  align-self: flex-start;
 }
 
 @media (max-width: 768px) {
   .game-container {
-    padding: 0;
-    padding-bottom: 120px;
+    height: calc(100vh - 56px);
   }
   .content-wrapper {
     flex-direction: column;
+    padding: 0;
     gap: 0;
+    padding-bottom: 100px;
   }
   .map-container {
-    padding: 0.5rem;
+    flex: 1;
+    min-height: 0;
   }
   .controls-container {
     position: fixed;
@@ -114,12 +118,12 @@ onMounted(async () => {
     flex-direction: row;
     justify-content: space-around;
     align-items: center;
-    border-radius: 8px 8px 0 0;
-    padding: 0.75rem;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+    border-radius: 12px 12px 0 0;
+    padding: 0.5rem 0.75rem;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
     z-index: 100;
-    max-height: 20vh;
-    top: auto;
+    gap: 0.25rem;
+    align-self: stretch;
   }
 }
 </style>

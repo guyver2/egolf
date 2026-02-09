@@ -64,10 +64,10 @@ function formattedSeed(): string {
     <div class="main-info">
       <p>Par: {{ game.par }}</p>
       <p>Strokes: {{ game.strokes }}</p>
-      <p>Distance: {{ game.distance }}</p>
+      <p>Dist: {{ game.distance }}</p>
     </div>
     <div class="seed-controls">
-      <p>
+      <p class="seed-line">
         Seed:
         <input
           v-if="editingSeed"
@@ -108,12 +108,14 @@ function formattedSeed(): string {
   color: white;
   gap: 5px;
   padding: 0.5rem;
-  min-width: 120px;
+  min-width: 0;
 }
 
 .main-info {
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
 }
 
 .seed-controls {
@@ -122,9 +124,14 @@ function formattedSeed(): string {
   gap: 0.5rem;
 }
 
+.seed-line {
+  font-size: 0.9rem;
+}
+
 .button-group {
   display: flex;
   gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 input {
@@ -134,6 +141,7 @@ input {
   padding: 2px 4px;
   width: 80px;
   max-width: 100%;
+  font-size: inherit;
 }
 
 .seed-display {
@@ -144,6 +152,7 @@ input {
   cursor: pointer;
   border-radius: 3px;
   font-size: inherit;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .seed-display:hover {
@@ -154,34 +163,46 @@ input {
   background-color: #99a29b;
   color: white;
   border: none;
-  padding: 5px 10px;
+  padding: 6px 12px;
   cursor: pointer;
   border-radius: 5px;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .seed-button:hover {
   background-color: #aab4ac;
 }
 
+.seed-button:active {
+  background-color: #bbc4bd;
+}
+
 @media (max-width: 768px) {
   .hole-info-container {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
     width: 100%;
-    gap: 1rem;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
   }
-  .main-info { font-size: 0.9rem; }
+  .main-info {
+    font-size: 0.8rem;
+    gap: 0.5rem;
+  }
   .seed-controls {
     flex-direction: row;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .seed-line {
+    font-size: 0.8rem;
+  }
+  .seed-button {
+    padding: 5px 10px;
+    font-size: 0.8rem;
   }
   p { margin: 0; }
-}
-
-@media (max-width: 480px) {
-  .main-info { font-size: 0.8rem; gap: 0.5rem; }
-  .seed-button { padding: 4px 8px; font-size: 0.8rem; }
 }
 </style>

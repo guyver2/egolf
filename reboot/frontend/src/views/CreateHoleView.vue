@@ -155,8 +155,8 @@ async function saveHole() {
 
 <style scoped>
 .page-container {
-  margin-top: 60px;
-  padding: 2rem 1rem;
+  margin-top: 56px;
+  padding: 1.5rem 1rem;
   max-width: 800px;
   margin-left: auto;
   margin-right: auto;
@@ -181,7 +181,7 @@ h1 {
 }
 
 .terrain-preview {
-  width: 240px;
+  width: 220px;
   height: auto;
   border-radius: 6px;
   border: 2px solid #444;
@@ -199,6 +199,7 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  min-width: 0;
 }
 
 .field {
@@ -217,9 +218,10 @@ h1 {
   background-color: #1e1e1e;
   border: 1px solid #555;
   color: #eee;
-  padding: 0.5rem 0.75rem;
+  padding: 0.6rem 0.75rem;
   border-radius: 4px;
-  font-size: 0.95rem;
+  font-size: 1rem;
+  -webkit-appearance: none;
 }
 
 .field input[type="text"]:focus {
@@ -248,6 +250,7 @@ h1 {
   cursor: pointer;
   font-size: 0.9rem;
   transition: background-color 0.2s;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .btn-small {
@@ -265,12 +268,16 @@ h1 {
   background-color: #3a3;
   color: white;
   font-size: 1rem;
-  padding: 0.65rem 1.25rem;
+  padding: 0.75rem 1.25rem;
   margin-top: 0.5rem;
 }
 
 .btn-primary:hover {
   background-color: #4b4;
+}
+
+.btn-primary:active {
+  background-color: #5c5;
 }
 
 .btn-primary:disabled {
@@ -284,15 +291,22 @@ h1 {
 }
 
 @media (max-width: 600px) {
+  .page-container {
+    padding: 1rem 0.75rem;
+  }
+
   .create-layout {
     flex-direction: column;
     align-items: stretch;
+    gap: 1.5rem;
   }
+
   .preview-area {
     align-items: center;
   }
+
   .terrain-preview {
-    width: 200px;
+    width: min(200px, 60vw);
   }
 }
 </style>

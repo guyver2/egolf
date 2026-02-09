@@ -92,8 +92,8 @@ onMounted(async () => {
 
 <style scoped>
 .page-container {
-  margin-top: 60px;
-  padding: 2rem 1rem;
+  margin-top: 56px;
+  padding: 1.5rem 1rem;
   max-width: 800px;
   margin-left: auto;
   margin-right: auto;
@@ -101,6 +101,7 @@ onMounted(async () => {
 
 h1 {
   margin-bottom: 0.5rem;
+  font-size: clamp(1.2rem, 4vw, 1.8rem);
 }
 
 h2 {
@@ -132,9 +133,17 @@ h2 {
   background-color: #272727;
 }
 
+.play-info {
+  flex: 1;
+  min-width: 0;
+}
+
 .play-info h3 {
   font-size: 1rem;
   margin-bottom: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .play-info p {
@@ -147,6 +156,7 @@ h2 {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  flex-shrink: 0;
 }
 
 .button {
@@ -158,10 +168,15 @@ h2 {
   text-align: center;
   font-size: 0.9rem;
   transition: background-color 0.2s;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .button:hover {
   background-color: #555;
+}
+
+.button:active {
+  background-color: #666;
 }
 
 .button.secondary {
@@ -170,5 +185,29 @@ h2 {
 
 .button.secondary:hover {
   background-color: #444;
+}
+
+@media (max-width: 600px) {
+  .page-container {
+    padding: 1rem 0.75rem;
+  }
+
+  .play-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+
+  .play-actions {
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+
+  .button {
+    flex: 1;
+    text-align: center;
+    padding: 0.5rem;
+  }
 }
 </style>
