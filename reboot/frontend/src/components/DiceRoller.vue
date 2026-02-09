@@ -83,6 +83,7 @@ function dotPositions(result: number): Array<{ cx: string; cy: string }> {
     <button class="putt-button" :class="{ locked: game.dice.locked }" @click="putt">
       Putt
     </button>
+    <p v-if="game.noMoves" class="no-moves">No moves! Roll again.</p>
   </div>
 </template>
 
@@ -143,6 +144,12 @@ rect.D8 { fill: #3a3; stroke: #5a5a5a; stroke-width: 2; }
 .putt-button.locked {
   cursor: not-allowed;
   background-color: #5a5a5a;
+}
+
+.no-moves {
+  color: #f77;
+  font-size: 0.85rem;
+  text-align: center;
 }
 
 @media (max-width: 768px) {

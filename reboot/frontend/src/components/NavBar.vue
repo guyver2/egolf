@@ -21,6 +21,7 @@ async function logout() {
         <button class="dropdown-btn">Menu</button>
         <div class="dropdown-content">
           <router-link to="/holes">Holes</router-link>
+          <router-link v-if="auth.isLoggedIn" to="/create-hole">Create Hole</router-link>
           <router-link v-if="auth.isLoggedIn" to="/profile">Profile</router-link>
         </div>
       </div>

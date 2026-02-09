@@ -24,9 +24,19 @@ const router = createRouter({
       component: () => import('@/views/HolesView.vue')
     },
     {
+      path: '/create-hole',
+      name: 'create-hole',
+      component: () => import('@/views/CreateHoleView.vue')
+    },
+    {
       path: '/play/hole/:id',
       name: 'play-hole',
       component: () => import('@/views/PlayHoleView.vue')
+    },
+    {
+      path: '/holes/:id/replays',
+      name: 'hole-replays',
+      component: () => import('@/views/HoleReplaysView.vue')
     },
     {
       path: '/profile',

@@ -5,6 +5,7 @@ backend/routes/__pycache__/
 **/__pycache__/
 *.pyc
 backend/egolf.db
+backend/terrain_cache/
 
 # Frontend
 frontend/node_modules/

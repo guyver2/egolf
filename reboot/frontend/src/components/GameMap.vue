@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import type { TerrainSymbol } from '@/lib/terrain'
 import { useGameStore } from '@/stores/game'
 import { useAuthStore } from '@/stores/auth'
@@ -64,10 +64,48 @@ const viewBox = computed(() =>
   `0 0 ${game.terrain.width * 10} ${game.terrain.height * 10}`
 )
 
+const saved = ref(false)
+
+// Reset saved state when a new hole is loaded
+watch(() => game.terrain.seed, () => {
+  saved.value = false
+})
+
 async function saveHolePlay() {
   if (!auth.user) return
-  const history = game.terrain.ballPositionHistory
-  const finalPos = game.terrain.ballPosition
+  const t = game.terrain
+
+  // If the hole hasn't been persisted yet (id == -1), save it first
+  let holeId = t.id
+  if (holeId < 0) {
+    try {
+      const hole = await api.post<{ id: number }>('/holes', {
+        name: 'Hole ' + t.seed,
+        seed: t.seed,
+        width: t.width,
+        height: t.height
+      })
+      holeId = hole.id
+      t.id = holeId
+    } catch (e: any) {
+      // Hole with same seed+dimensions may already exist — try to find it
+      try {
+        const existing = await api.get<{ holes: { id: number }[] }>(
+          `/holes?page=0&limit=1`
+        )
+        // Fallback: we can't easily look up by seed via current API,
+        // so just log the error
+        console.error('Failed to save hole:', e.message)
+        return
+      } catch {
+        console.error('Failed to save hole:', e)
+        return
+      }
+    }
+  }
+
+  const history = t.ballPositionHistory
+  const finalPos = t.ballPosition
   const allPositions = [...history, finalPos]
 
   const moves = []
@@ -82,9 +120,10 @@ async function saveHolePlay() {
 
   try {
     await api.post('/holeplays', {
-      hole_id: game.terrain.id,
+      hole_id: holeId,
       moves
     })
+    saved.value = true
   } catch (e) {
     console.error('Failed to save play:', e)
   }
@@ -150,9 +189,12 @@ function tilePath(corners: { tl: number; tr: number; bl: number; br: number }): 
     <div v-if="game.finished" class="overlay">
       <h1>Congratulations!</h1>
       <p class="stroke-count">{{ game.strokes }} strokes (par {{ game.par }})</p>
-      <button v-if="props.allowSave && auth.isLoggedIn" class="save-btn" @click="saveHolePlay">
-        Save Play
-      </button>
+      <template v-if="auth.isLoggedIn">
+        <button v-if="!saved" class="save-btn" @click="saveHolePlay">
+          Save Play
+        </button>
+        <p v-else class="saved-msg">Play saved!</p>
+      </template>
     </div>
   </div>
 </template>
@@ -238,6 +280,12 @@ function tilePath(corners: { tl: number; tr: number; bl: number; br: number }): 
 
 .save-btn:hover {
   background-color: #aab4ac;
+}
+
+.saved-msg {
+  color: #7c7;
+  font-size: 1.1rem;
+  margin-top: 0.5rem;
 }
 
 @media (max-width: 768px) {

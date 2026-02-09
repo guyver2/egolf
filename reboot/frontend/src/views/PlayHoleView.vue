@@ -24,7 +24,7 @@ onMounted(async () => {
   try {
     const holeId = Number(route.params.id)
     const hole = await api.get<HoleData>(`/holes/${holeId}`)
-    game.initTerrain(hole.seed, hole.width, hole.height, hole.id)
+    await game.initTerrain(hole.seed, hole.width, hole.height, hole.id)
     loading.value = false
   } catch (e: any) {
     error.value = e.message || 'Failed to load hole'

@@ -2,7 +2,7 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { api } from '@/api'
-import { Terrain } from '@/lib/terrain'
+import { Terrain, type TerrainData } from '@/lib/terrain'
 import ReplayMap from '@/components/ReplayMap.vue'
 
 interface Move {
@@ -124,12 +124,10 @@ onMounted(async () => {
     play.value = await api.get<HolePlayData>(`/holeplays/${playId}`)
 
     if (play.value.hole_seed && play.value.hole_width && play.value.hole_height) {
-      terrain.value = new Terrain(
-        play.value.hole_seed,
-        play.value.hole_width,
-        play.value.hole_height,
-        play.value.hole_id
+      const terrainData = await api.get<TerrainData>(
+        `/terrain/generate?seed=${play.value.hole_seed}&width=${play.value.hole_width}&height=${play.value.hole_height}`
       )
+      terrain.value = new Terrain(terrainData, play.value.hole_id)
     } else {
       error.value = 'Missing hole data for replay'
     }
@@ -222,7 +220,6 @@ onUnmounted(() => {
 <style scoped>
 .page-container {
   margin-top: 60px;
-  min-height: calc(100vh - 60px);
   background-color: #1a1a1a;
   padding: 2rem 1rem;
   display: flex;
@@ -257,15 +254,13 @@ onUnmounted(() => {
   gap: 20px;
   max-width: 1200px;
   width: 100%;
+  align-items: flex-start;
 }
 
 .map-area {
   flex: 1;
   display: flex;
   justify-content: center;
-  max-height: 80vh;
-  max-width: 50vw;
-  overflow-y: auto;
 }
 
 .controls-panel {
@@ -276,7 +271,8 @@ onUnmounted(() => {
   padding: 1.5rem;
   border-radius: 8px;
   width: 220px;
-  align-self: flex-start;
+  position: sticky;
+  top: 80px;
 }
 
 .step-display {

@@ -15,28 +15,28 @@ const auth = useAuthStore()
 const editingSeed = ref(false)
 const seedInput = ref(game.terrain.seed)
 
-function handleSeedSubmit() {
+async function handleSeedSubmit() {
   let seed = seedInput.value
     .replace(/[^a-zA-Z0-9]/g, '0')
     .slice(0, 8)
     .padEnd(8, '0')
   seedInput.value = seed
   editingSeed.value = false
-  game.regenerate(seed, game.terrain.width, game.terrain.height)
+  await game.regenerate(seed, game.terrain.width, game.terrain.height)
 }
 
-function randomSeed() {
+async function randomSeed() {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789'
   let seed = ''
   for (let i = 0; i < 8; i++) {
     seed += chars.charAt(Math.floor(Math.random() * chars.length))
   }
   seedInput.value = seed
-  game.regenerate(seed, game.terrain.width, game.terrain.height)
+  await game.regenerate(seed, game.terrain.width, game.terrain.height)
 }
 
-function retry() {
-  game.regenerate(game.terrain.seed, game.terrain.width, game.terrain.height)
+async function retry() {
+  await game.regenerate(game.terrain.seed, game.terrain.width, game.terrain.height)
 }
 
 async function saveHole() {

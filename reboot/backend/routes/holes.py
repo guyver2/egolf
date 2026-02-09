@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException, Depends, Query, status
 from schemas import HoleCreateRequest, HoleResponse, HoleListResponse
 from auth import require_user
 from db import get_db
+from routes.terrain import save_terrain_thumbnail
 
 router = APIRouter()
 
@@ -98,5 +99,8 @@ def create_hole(req: HoleCreateRequest, user: dict = Depends(require_user)):
             """,
             (hole_id,),
         ).fetchone()
+
+    # Persist the terrain thumbnail to disk now that the hole is saved
+    save_terrain_thumbnail(req.seed, req.width, req.height)
 
     return _row_to_hole_response(row)

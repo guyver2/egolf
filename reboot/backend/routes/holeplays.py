@@ -50,13 +50,21 @@ PLAY_JOIN_QUERY = """
 """
 
 
+ALLOWED_SORT = {
+    "recent": "hp.created_at DESC",
+    "best": "hp.strokes ASC, hp.created_at ASC",
+}
+
+
 @router.get("", response_model=HolePlayListResponse)
 def list_hole_plays(
     page: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
     user_id: int | None = None,
     hole_id: int | None = None,
+    sort: str = Query("recent"),
 ):
+    order_clause = ALLOWED_SORT.get(sort, ALLOWED_SORT["recent"])
     offset = page * limit
     conditions = []
     params: list = []
@@ -77,7 +85,7 @@ def list_hole_plays(
             f"""
             {PLAY_JOIN_QUERY}
             {where_clause}
-            ORDER BY hp.created_at DESC
+            ORDER BY {order_clause}
             LIMIT ? OFFSET ?
             """,
             params + [limit, offset],

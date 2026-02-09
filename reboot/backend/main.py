@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from migrate import run_all as run_migrations
-from routes import auth, holes, holeplays
+from routes import auth, holes, holeplays, terrain
 
 
 @asynccontextmanager
@@ -27,6 +27,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(holes.router, prefix="/api/holes", tags=["holes"])
 app.include_router(holeplays.router, prefix="/api/holeplays", tags=["holeplays"])
+app.include_router(terrain.router, prefix="/api/terrain", tags=["terrain"])
 
 
 @app.get("/api/health")

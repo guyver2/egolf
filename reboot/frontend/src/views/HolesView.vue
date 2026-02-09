@@ -52,15 +52,21 @@ watch(page, fetchHoles)
 
     <div v-else class="holes-grid">
       <div v-for="hole in holes" :key="hole.id" class="hole-card">
+        <img
+          :src="`/api/terrain/preview?seed=${hole.seed}&width=${hole.width}&height=${hole.height}`"
+          :alt="`Preview of ${hole.name}`"
+          class="hole-preview"
+          loading="lazy"
+        />
         <div class="hole-info">
           <h2>{{ hole.name }}</h2>
-          <p>Seed: {{ hole.seed }}</p>
           <p>Size: {{ hole.width }}x{{ hole.height }}</p>
           <p>Author: {{ hole.author_name || 'System' }}</p>
           <p>Created: {{ new Date(hole.created_at).toDateString() }}</p>
         </div>
         <div class="hole-actions">
           <router-link :to="`/play/hole/${hole.id}`" class="button">Play</router-link>
+          <router-link :to="`/holes/${hole.id}/replays`" class="button button-secondary">Replays</router-link>
         </div>
       </div>
     </div>
@@ -100,13 +106,26 @@ h1 {
 
 .hole-card {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   gap: 1rem;
   border: 1px solid #444;
   border-radius: 8px;
   padding: 1rem;
   background-color: #272727;
+}
+
+.hole-preview {
+  width: 80px;
+  height: auto;
+  border-radius: 4px;
+  border: 1px solid #555;
+  flex-shrink: 0;
+  image-rendering: pixelated;
+}
+
+.hole-info {
+  flex: 1;
+  min-width: 0;
 }
 
 .hole-info h2 {
@@ -138,6 +157,16 @@ h1 {
 
 .button:hover {
   background-color: #555;
+}
+
+.button-secondary {
+  background-color: transparent;
+  border: 1px solid #555;
+  color: #ccc;
+}
+
+.button-secondary:hover {
+  background-color: #333;
 }
 
 .pagination {

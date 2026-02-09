@@ -140,25 +140,20 @@ function tilePath(corners: { tl: number; tr: number; bl: number; br: number }): 
 <style scoped>
 .map-wrapper {
   position: relative;
-  width: 70%;
-  height: 100%;
-  overflow: auto;
+  width: 100%;
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: flex-start;
-  margin: 0 auto;
-  border: 1px solid #ccc;
 }
 
 .map {
-  display: flex;
-  flex-direction: column;
   border: 2px solid #333;
   padding: 10px;
   border-radius: 4px;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
   margin: 0 auto;
-  width: auto;
+  width: 100%;
+  max-width: 420px;
   height: auto;
 }
 

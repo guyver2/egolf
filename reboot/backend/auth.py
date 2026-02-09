@@ -24,7 +24,7 @@ def verify_password(password: str, password_hash: str) -> bool:
 
 def create_access_token(user_id: int, username: str) -> str:
     payload = {
-        "sub": user_id,
+        "sub": str(user_id),
         "username": username,
         "exp": datetime.now(timezone.utc) + timedelta(hours=JWT_EXPIRY_HOURS),
         "iat": datetime.now(timezone.utc),
@@ -55,8 +55,12 @@ def get_current_user(
     if payload is None:
         return None
 
-    user_id = payload.get("sub")
-    if user_id is None:
+    user_id_str = payload.get("sub")
+    if user_id_str is None:
+        return None
+    try:
+        user_id = int(user_id_str)
+    except (ValueError, TypeError):
         return None
 
     with get_db() as conn:

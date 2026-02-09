@@ -7,14 +7,14 @@ import { useGameStore } from '@/stores/game'
 
 const game = useGameStore()
 
-onMounted(() => {
+onMounted(async () => {
   // Generate a random seed on mount
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789'
   let seed = ''
   for (let i = 0; i < 8; i++) {
     seed += chars.charAt(Math.floor(Math.random() * chars.length))
   }
-  game.initTerrain(seed, 10, 15)
+  await game.initTerrain(seed, 10, 15)
 })
 </script>
 
