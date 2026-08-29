@@ -1,0 +1,43 @@
+<nav class="nav-bar">
+  <div class="nav-left">
+    <a href="/" class="logo-link"><h1>Pixel Golf</h1></a>
+  </div>
+  <div class="nav-center desktop-only">
+    <a href="/holes" class="nav-link">Holes</a>
+    {% match user %}
+    {% when Some with (u) %}
+    <a href="/create-hole" class="nav-link">Create</a>
+    <a href="/profile" class="nav-link">Profile</a>
+    {% when None %}{% endmatch %}
+  </div>
+  <div class="nav-right desktop-only">
+    {% match user %}
+    {% when Some with (u) %}
+    <form method="post" action="/logout" style="display:inline">
+      <button type="submit" class="auth-button">Logout {{ u.username }}</button>
+    </form>
+    {% when None %}
+    <a href="/login" class="auth-button">Login</a>
+    <a href="/signup" class="auth-button primary">Sign Up</a>
+    {% endmatch %}
+  </div>
+  <button class="hamburger mobile-only" id="menu-toggle" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div class="mobile-menu mobile-only" id="mobile-menu" hidden>
+  <div class="mobile-menu-content">
+    <a href="/holes" class="mobile-link">Holes</a>
+    {% match user %}
+    {% when Some with (u) %}
+    <a href="/create-hole" class="mobile-link">Create Hole</a>
+    <a href="/profile" class="mobile-link">Profile</a>
+    <hr class="mobile-divider">
+    <form method="post" action="/logout"><button type="submit" class="mobile-link logout-btn">Logout ({{ u.username }})</button></form>
+    {% when None %}
+    <hr class="mobile-divider">
+    <a href="/login" class="mobile-link">Login</a>
+    <a href="/signup" class="mobile-link highlight">Sign Up</a>
+    {% endmatch %}
+  </div>
+</div>

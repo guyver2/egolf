@@ -1,0 +1,4 @@
+DROP TABLE IF EXISTS hole_play_moves;
+DROP TABLE IF EXISTS hole_plays;
+DROP TABLE IF EXISTS holes;
+DROP TABLE IF EXISTS users;

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile — Pixel Golf</title>
+  <link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+  {% include "nav.html" %}
+  <div class="page-container list-page">
+    <h1>Profile — {{ username }}</h1>
+    <h2>Your Plays</h2>
+    {% if plays.is_empty() %}
+    <p class="empty">No plays recorded yet.</p>
+    {% else %}
+    <div class="plays-list">
+      {% for play in plays %}
+      <div class="play-card">
+        <div class="play-info">
+          <h3>{% if let Some(name) = play.hole_name %}{{ name }}{% else %}Hole #{{ play.hole_id }}{% endif %}</h3>
+          <p>Strokes: {{ play.strokes }}</p>
+          <p>Played: {{ play.created_at }}</p>
+          {% if let (Some(w), Some(h)) = (play.hole_width, play.hole_height) %}
+          <p>Size: {{ w }}x{{ h }}</p>
+          {% endif %}
+        </div>
+        <div class="play-actions">
+          <a href="/replay/{{ play.id }}" class="button">Replay</a>
+          <a href="/play/hole/{{ play.hole_id }}" class="button secondary">Play Again</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+</body>
+</html>

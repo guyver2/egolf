@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Holes — Pixel Golf</title>
+  <link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+  {% include "nav.html" %}
+  <div class="page-container list-page">
+    <h1>Holes</h1>
+    {% if holes.is_empty() %}
+    <p class="empty">No holes found.</p>
+    {% else %}
+    <div class="holes-grid">
+      {% for hole in holes %}
+      <div class="hole-card">
+        <img src="/terrain/preview?seed={{ hole.seed }}&width={{ hole.width }}&height={{ hole.height }}"
+             alt="Preview of {{ hole.name }}" class="hole-preview" loading="lazy">
+        <div class="hole-info">
+          <h2>{{ hole.name }}</h2>
+          <p>Size: {{ hole.width }}x{{ hole.height }}</p>
+          <p>Author: {% if let Some(name) = hole.author_name %}{{ name }}{% else %}System{% endif %}</p>
+          <p class="date-text">{{ hole.created_at }}</p>
+        </div>
+        <div class="hole-actions">
+          <a href="/play/hole/{{ hole.id }}" class="button">Play</a>
+          <a href="/holes/{{ hole.id }}/replays" class="button button-secondary">Replays</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% if total_pages > 1 %}
+    <div class="pagination">
+      {% if page > 0 %}<a href="/holes?page={{ page - 1 }}" class="button">Previous</a>{% else %}<span class="button disabled">Previous</span>{% endif %}
+      <span>Page {{ page + 1 }} of {{ total_pages }}</span>
+      {% if page + 1 < total_pages %}<a href="/holes?page={{ page + 1 }}" class="button">Next</a>{% else %}<span class="button disabled">Next</span>{% endif %}
+    </div>
+    {% endif %}
+    {% endif %}
+  </div>
+</body>
+</html>

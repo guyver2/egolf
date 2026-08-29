@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up — Pixel Golf</title>
+  <link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+  {% include "nav.html" %}
+  <div class="page-container auth-page">
+    <div class="form-container">
+      <h1>Sign Up</h1>
+      {% if let Some(err) = error %}<p class="error">{{ err }}</p>{% endif %}
+      <form method="post" action="/signup">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input id="username" name="username" type="text" required>
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" required>
+        </div>
+        <div class="form-group">
+          <label for="confirm_password">Confirm Password</label>
+          <input id="confirm_password" name="confirm_password" type="password" required>
+        </div>
+        <button type="submit">Sign Up</button>
+      </form>
+      <p class="signup-link">Already have an account? <a href="/login">Sign in</a></p>
+    </div>
+  </div>
+</body>
+</html>

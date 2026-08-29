@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Replay — Pixel Golf</title>
+  <link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+  {% include "nav.html" %}
+  <div class="page-container replay-page">
+    <div class="replay-header">
+      <h2>{% if let Some(name) = play.hole_name %}{{ name }}{% else %}Hole #{{ play.hole_id }}{% endif %}</h2>
+      <span class="meta">by {% if let Some(name) = play.user_name %}{{ name }}{% else %}Unknown{% endif %} — {{ play.strokes }} strokes — {{ play.created_at }}</span>
+    </div>
+    <div class="content-wrapper">
+      <div class="map-area map-wrapper">
+        <svg class="map" id="replay-map" viewBox="0 0 {{ terrain.width * 10 }} {{ terrain.height * 10 }}" preserveAspectRatio="xMidYMid meet">
+          {% for t in tiles %}
+          <g transform="translate({{ t.col * 10 }} {{ t.row * 10 }})" class="tile {{ t.class }}{% if t.is_hole %} hole{% endif %}{% if t.is_start %} start{% endif %}">
+            <rect x="0" y="0" width="10" height="10" fill="#272727"/>
+            <path d="M 2.5 0.5 H 7.5 A 2 2 0 0 1 9.5 2.5 V 7.5 A 2 2 0 0 1 7.5 9.5 H 2.5 A 2 2 0 0 1 0.5 7.5 V 2.5 A 2 2 0 0 1 2.5 0.5"/>
+          </g>
+          {% endfor %}
+          <path id="replay-path" class="replay-path" fill="none" stroke="#f77" stroke-width="0.8"/>
+          <circle id="replay-ball" cx="5" cy="5" r="2.5" class="ball" stroke="#666" stroke-width="0.5"/>
+        </svg>
+      </div>
+      <div class="controls-panel" id="replay-controls"
+           data-positions='{{ positions_json }}'
+           data-total="{{ total_moves }}">
+        <div class="step-display">Move <span id="replay-step">0</span> / <span id="replay-total">{{ total_moves }}</span></div>
+        <div class="playback-controls">
+          <button type="button" id="replay-reset" title="Reset">⏮</button>
+          <button type="button" id="replay-back" title="Step back">⏪</button>
+          <button type="button" id="replay-play" title="Play">▶</button>
+          <button type="button" id="replay-forward" title="Step forward">⏩</button>
+        </div>
+        <div class="speed-controls">
+          <span>Speed:</span>
+          <button type="button" data-speed="1000">0.5x</button>
+          <button type="button" data-speed="500" class="active">1x</button>
+          <button type="button" data-speed="250">2x</button>
+          <button type="button" data-speed="100">4x</button>
+        </div>
+        <div class="finished-msg" id="replay-finished" hidden>Replay complete!</div>
+      </div>
+    </div>
+  </div>
+  <script src="/assets/replay.js"></script>
+</body>
+</html>
