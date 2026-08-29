@@ -1,27 +1,11 @@
-test-results
-node_modules
-
-# Output
-.output
-.vercel
-.netlify
-.wrangler
-/.svelte-kit
-/build
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Env
+/target/
+**/*.rs.bk
+egolf.db
+egolf.db-shm
+egolf.db-wal
+terrain_cache/
+node_modules/
 .env
-.env.*
 !.env.example
-!.env.test
-
-# Vite
-vite.config.js.timestamp-*
-vite.config.ts.timestamp-*
-
-# Prisma
-prisma/migrations/
+*.png
+!assets/**

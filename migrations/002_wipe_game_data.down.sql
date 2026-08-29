@@ -1,0 +1,1 @@
+-- No-op: wiped game data cannot be restored.

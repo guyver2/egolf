@@ -1,0 +1,31 @@
+[package]
+name = "egolf"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1"
+askama = "0.12"
+axum = { version = "0.8", features = ["macros"] }
+axum-extra = { version = "0.10", features = ["cookie"] }
+bcrypt = "0.17"
+chrono = { version = "0.4", features = ["serde"] }
+cookie = { version = "0.18", features = ["percent-encode"] }
+dotenvy = "0.15"
+image = "0.25"
+jsonwebtoken = "9"
+rand = "0.9"
+r2d2 = "0.8"
+r2d2_sqlite = "0.25"
+rand_chacha = "0.9"
+rusqlite = { version = "0.32", features = ["bundled"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+tokio = { version = "1", features = ["full"] }
+tower-http = { version = "0.6", features = ["fs", "trace"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[build-dependencies]
+askama = "0.12"

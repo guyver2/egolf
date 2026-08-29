@@ -2,20 +2,13 @@
 
 > **Living document.** Read this file before making any change to the project. Update it after every modification that adds, removes, or alters behaviour, APIs, data models, or deployment.
 
-Last updated: 2026-08-29
+Last updated: 2026-08-29 (save play fix)
 
 ## 1. Product overview
 
 eGolf is a digital adaptation of [Paper Apps Golf](https://gladdendesign.com/products/paper-apps-golf) by Tom Brinton. Players roll dice to determine shot distance, move a ball across procedurally generated terrain, and try to reach the hole in as few strokes as possible.
 
-The repository contains **two implementations**:
-
-| Path | Stack | Status |
-|------|-------|--------|
-| `reboot/` | Vue 3 + FastAPI + SQLite | **Primary / active** — full feature set |
-| `/` (root) | SvelteKit + Prisma + SQLite | **Legacy** — partial feature set, client-side terrain |
-
-Unless stated otherwise, new work should target `reboot/`.
+**Stack**: single Rust binary at repo root — Axum + Askama (SSR) + SQLite + client-side `assets/game.js`.
 
 ---
 
@@ -33,7 +26,7 @@ Unless stated otherwise, new work should target `reboot/`.
 | UR-G06 | **Terrain type on the landing tile** determines the die for the *next* roll: **fairway → D8 (1–8)**, **grass → D6 (1–6)**, **sand → D2 (1–2)**. |
 | UR-G07 | The player may use a **Putt** action for a **guaranteed roll of 1** (same flow as a normal roll). |
 | UR-G08 | While a roll is unresolved (landing positions shown), the die is **locked**; it unlocks after a valid move. |
-| UR-G09 | If a roll yields **no valid landing positions**, the stroke is **counted as wasted**, the player is prompted to roll again, and the die unlocks (`reboot` only). |
+| UR-G09 | If a roll yields **no valid landing positions**, the stroke is **counted as wasted**, the player is prompted to roll again, and the die unlocks. |
 | UR-G10 | The hole is **won** when the ball reaches the hole tile. A congratulations overlay shows **stroke count** and **par**. |
 | UR-G11 | **Par** is displayed during play and equals `floor(height / 5) + 1`. |
 | UR-G12 | **Distance** (Manhattan) to the hole is displayed during play. |
@@ -73,7 +66,7 @@ Unless stated otherwise, new work should target `reboot/`.
 | ID | Requirement |
 |----|-------------|
 | UR-A01 | Users can **sign up** with username, email, and password (password confirmation on client). |
-| UR-A02 | Users can **log in** with username and password; session is a **JWT** stored in `localStorage`. |
+| UR-A02 | Users can **log in** with username and password; session is a **JWT** in an **httpOnly cookie**. |
 | UR-A03 | Users can **log out**; token is cleared. |
 | UR-A04 | **Logged-in users** can **save a hole** from the home screen (name defaults to `Hole {seed}`). |
 | UR-A05 | **Logged-in users** can **create a hole** via a dedicated form: name, seed, width (5–30 slider in UI), height (5–40 slider in UI), live preview, then **Save & Play**. |
@@ -86,45 +79,45 @@ Unless stated otherwise, new work should target `reboot/`.
 | ID | Requirement |
 |----|-------------|
 | UR-N01 | A fixed **top navigation bar** shows: logo/home, Holes, Create (auth), Profile (auth), Login/Sign Up or Logout. |
-| UR-N02 | On viewports ≤768px, navigation collapses to a **hamburger menu**. |
-| UR-N03 | Game controls sit in a **side panel** on desktop and a **fixed bottom bar** on mobile. |
+| UR-N02 | On viewports ≤768px, navigation collapses to a **hamburger menu** (toggle via `assets/nav.js` on all pages). |
+| UR-N03 | Game controls sit in a **side panel** on desktop and a **compact fixed bottom bar** on mobile; seed/actions open via **⋯** toggle. |
 | UR-N04 | The UI uses a **dark theme** throughout. |
 
 ---
 
 ## 3. System requirements
 
-### 3.1 Architecture (`reboot/`)
+### 3.1 Architecture
 
 | ID | Requirement |
 |----|-------------|
-| SR-A01 | **Backend**: Python 3.10+, FastAPI, raw SQLite (no ORM). |
-| SR-A02 | **Frontend**: Vue 3, TypeScript, Pinia, Vue Router, Vite. |
-| SR-A03 | **API prefix**: `/api`. Dev frontend proxies `/api` → backend `:8000`. |
-| SR-A04 | **Terrain generation runs on the backend**; the frontend fetches map data via API. |
-| SR-A05 | **Game logic** (dice, landing positions, move validation) runs **client-side** in Pinia `game` store. |
-| SR-A06 | Migrations run **automatically on backend startup** and via `make migrate`. |
+| SR-A01 | **Backend**: Rust, Axum, raw SQLite (`rusqlite`), Askama templates (SSR). |
+| SR-A02 | **Frontend**: server-rendered HTML + static `assets/game.js` / `assets/replay.js` / `assets/style.css`. |
+| SR-A03 | **No separate API server**; HTML pages and a few JSON/form endpoints for game client (`/terrain/json`, `/game/save-*`). |
+| SR-A04 | **Terrain generation runs on the server**; the client fetches map data via `/terrain/json`. |
+| SR-A05 | **Game logic** (dice, landing positions, move validation) runs **client-side** in `assets/game.js`. |
+| SR-A06 | Migrations run **automatically on startup** and via `make migrate`. |
 
 ### 3.2 Terrain generation
 
 | ID | Requirement |
 |----|-------------|
 | SR-T01 | Input: `seed` (exactly 8 chars), `width` and `height` (5–100 inclusive). |
-| SR-T02 | PRNG: string hash → linear congruential generator (multiplier 16807, modulus 2147483647). |
+| SR-T02 | PRNG: `StdRng` seeded from the seed string (Rust-native; **not** byte-compatible with the former Python generator). |
 | SR-T03 | Base fill: **grass**. Fairway blobs painted in top quarter (1), middle (`height/6` blobs), bottom quarter (2). |
 | SR-T04 | Obstacles: `height/2` random blobs of sand (33%), trees (33%), or water (33%), size 10–20 tiles. |
 | SR-T05 | Fairway/sand/water blobs undergo **dilate then erode**; tree blobs do not. |
 | SR-T06 | **Ball** placed on fairway in bottom ~10% of map; **hole** on fairway in top ~10%. Fallback positions: ball `(1, h-2)`, hole `(w-2, 1)`. |
 | SR-T07 | Neighbours (8-connected) of ball and hole are forced to **fairway**; ball and hole tiles themselves are **fairway**. |
 | SR-T08 | Tile symbols: `g` grass, `f` fairway, `s` sand, `t` tree, `w` water. |
-| SR-T09 | API returns: `map`, `ball_position`, `hole_position`, `start_position`, `par`, `seed`, `width`, `height`. |
+| SR-T09 | `/terrain/json` returns: `map`, `ball_position`, `hole_position`, `start_position`, `par`, `seed`, `width`, `height`. |
 
 ### 3.3 Terrain previews
 
 | ID | Requirement |
 |----|-------------|
-| SR-P01 | `GET /api/terrain/preview` — cached PNG on disk (`terrain_cache/{seed}_{w}x{h}.png`), generated on first request or when a hole is saved. |
-| SR-P02 | `GET /api/terrain/preview/draft` — in-memory PNG, not cached (used during hole creation). |
+| SR-P01 | `GET /terrain/preview` — cached PNG on disk (`terrain_cache/{seed}_{w}x{h}.png`), generated on first request or when a hole is saved. |
+| SR-P02 | `GET /terrain/preview/draft` — in-memory PNG, not cached (used during hole creation). |
 | SR-P03 | Preview colours match frontend SVG palette; start tile magenta, hole black; 6px per tile. |
 
 ### 3.4 Authentication
@@ -134,10 +127,10 @@ Unless stated otherwise, new work should target `reboot/`.
 | SR-U01 | Passwords hashed with **bcrypt**. |
 | SR-U02 | JWT signed with **HS256**; payload includes `sub` (user id), `username`, `exp`, `iat`. |
 | SR-U03 | Token expiry: **24 hours**. |
-| SR-U04 | Protected endpoints require `Authorization: Bearer <token>`. |
+| SR-U04 | Protected routes read JWT from **httpOnly cookie** `access_token`; unauthenticated users redirect to `/login`. |
 | SR-U05 | Env: `JWT_SECRET` (required in production), `REGISTRATION_ENABLED` (default `true`). |
 
-### 3.5 Data model (SQLite — `reboot`)
+### 3.5 Data model (SQLite)
 
 ```
 users
@@ -159,61 +152,38 @@ hole_play_moves
 | SR-D01 | A hole is uniquely identified by `(seed, width, height)`; duplicates return **409**. |
 | SR-D02 | Stroke count on a play equals the **number of moves** submitted. |
 | SR-D03 | Move coordinates are **grid indices** (x = column, y = row). |
+| SR-D04 | Migration `002_wipe_game_data` removes all holes/plays/moves; **user accounts are preserved**. |
 
-### 3.6 API endpoints (`reboot`)
+### 3.6 HTTP routes
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/api/health` | No | Health check |
-| POST | `/api/auth/signup` | No | Create account |
-| POST | `/api/auth/login` | No | Returns JWT |
-| GET | `/api/auth/me` | Yes | Current user |
-| GET | `/api/holes?page&limit` | No | Paginated hole list |
-| GET | `/api/holes/{id}` | No | Single hole |
-| POST | `/api/holes` | Yes | Create hole (+ thumbnail cache) |
-| GET | `/api/holeplays?page&limit&user_id&hole_id&sort` | No | Paginated plays (`sort`: `recent` \| `best`) |
-| GET | `/api/holeplays/{id}` | No | Play with moves |
-| POST | `/api/holeplays` | Yes | Save completed play |
-| GET | `/api/terrain/generate?seed&width&height` | No | Full terrain JSON |
-| GET | `/api/terrain/preview?seed&width&height` | No | Cached PNG |
-| GET | `/api/terrain/preview/draft?seed&width&height` | No | Uncached PNG |
+| GET | `/health` | No | Health check |
+| GET | `/` | No | Home — random hole game page |
+| GET/POST | `/login` | No | Login form |
+| GET/POST | `/signup` | No | Signup form (if registration enabled) |
+| POST | `/logout` | No | Clear auth cookie |
+| GET | `/holes` | No | Paginated hole list |
+| GET/POST | `/create-hole` | Yes | Create hole form |
+| GET | `/play/hole/{id}` | No | Play saved hole |
+| GET | `/holes/{id}/replays` | No | Replays for a hole |
+| GET | `/profile` | Yes | User profile and plays |
+| GET | `/replay/{id}` | No | Replay viewer |
+| GET | `/terrain/json` | No | Full terrain JSON |
+| GET | `/terrain/preview` | No | Cached PNG |
+| GET | `/terrain/preview/draft` | No | Uncached PNG |
+| POST | `/game/save-hole` | Yes | Save new hole (JSON) |
+| POST | `/game/save-play` | Yes | Save completed play (JSON) |
 
-### 3.7 Frontend routes (`reboot`)
-
-| Path | View | Auth |
-|------|------|------|
-| `/` | HomeView — random hole | No |
-| `/login` | LoginView | No |
-| `/signup` | SignupView | No |
-| `/holes` | HolesView | No |
-| `/create-hole` | CreateHoleView | Yes (redirect to login) |
-| `/play/hole/:id` | PlayHoleView | No |
-| `/holes/:id/replays` | HoleReplaysView | No |
-| `/profile` | ProfileView | Yes (redirect to login) |
-| `/replay/:id` | ReplayView | No |
-
-### 3.8 Deployment and operations
+### 3.7 Deployment and operations
 
 | ID | Requirement |
 |----|-------------|
-| SR-O01 | **Docker Compose** (`reboot/docker-compose.yml`): `backend` (internal :8000), `frontend` (nginx :80 → host `${PORT:-8080}`). |
-| SR-O02 | Volumes: `db-data` (SQLite at `/data/egolf.db`), `thumbnail-cache`. |
-| SR-O03 | **Makefile** targets: `install`, `run-backend`, `run-frontend`, `migrate`, `migrate-up/down/status`, `docker-build/up/down/logs`, `typecheck`, `clean`. |
-| SR-O04 | Backend env: `DATABASE_PATH` (default `./egolf.db`), `JWT_SECRET`, `REGISTRATION_ENABLED`. |
-| SR-O05 | CORS allows `localhost:5173` and `127.0.0.1:5173` (dev only). |
-| SR-O06 | Nginx proxies `/api/` to backend; SPA fallback to `index.html`. |
-
-### 3.9 Legacy stack (root — SvelteKit)
-
-| ID | Requirement |
-|----|-------------|
-| SR-L01 | Terrain generation runs **entirely client-side** (`src/lib/map.svelte.ts`). |
-| SR-L02 | Auth uses **email + password** with JWT in **httpOnly cookie** and `AccessToken` table (Prisma). |
-| SR-L03 | Prisma models include **Course** (many-to-many with Hole) — **not implemented** in UI or reboot. |
-| SR-L04 | Terrain type symbols include **slopes** (`u`, `d`, `l`, `r`) in types — **not generated or used**. |
-| SR-L05 | No replay viewer, no hole preview thumbnails, no dedicated create-hole flow in legacy UI. |
-| SR-L06 | Default home seed is hardcoded `'not00set'` (not random). |
-| SR-L07 | Scripts: `pnpm dev`, `prisma:migrate`, `prisma:seed`, `test`, `test:e2e`. |
+| SR-O01 | **Docker Compose** (`docker-compose.yml`): single `egolf` service (host `${PORT:-8080}` → container `8080`). |
+| SR-O02 | Volumes: `db-data` (SQLite), `thumbnail-cache` (`terrain_cache`). |
+| SR-O03 | **Makefile** targets: `build`, `run`, `test`, `migrate`, `migrate-status`, `docker-build`, `docker-up`, `docker-down`, `clean`. |
+| SR-O04 | Env: `DATABASE_PATH` (default `./egolf.db`), `JWT_SECRET`, `REGISTRATION_ENABLED`, `TERRAIN_CACHE_DIR`, `PORT`. |
+| SR-O05 | Static assets and templates are embedded/served by the Rust binary. |
 
 ---
 
@@ -223,21 +193,18 @@ hole_play_moves
 |----|-------------|
 | NFR-01 | **Responsive**: usable on desktop and mobile (breakpoints at 768px and 600px). |
 | NFR-02 | **Accessibility**: interactive tiles and dice support keyboard (Enter); dice has `aria-label`. |
-| NFR-03 | **Determinism**: same seed + dimensions → same terrain (backend and legacy client generators are intended to match). |
+| NFR-03 | **Determinism**: same seed + dimensions → same terrain (Rust `StdRng` generator; not compatible with former Python output). |
 | NFR-04 | **Pagination**: list endpoints support `page` (0-based) and `limit` (1–100, default 20). |
 
 ---
 
 ## 5. Out of scope / known gaps
 
-- **Courses**: Prisma `Course` model exists in legacy schema; no API, UI, or reboot support.
-- **Slopes**: typed in legacy `TerrainSymbol` but never generated or applied.
+- **Courses**: not implemented.
+- **Slopes**: not generated or applied.
 - **Hole deletion / editing**: not implemented.
 - **Play deletion**: not implemented.
 - **User profile editing**: not implemented.
-- **Legacy login bug**: `bcrypt.compare` not awaited in `login/+page.server.ts`.
-- **Legacy no-moves handling**: wasted-stroke logic not implemented (TODO in `Map.svelte`).
-- **GameMap auto-save fallback**: if hole save fails on duplicate, lookup by seed is incomplete.
 
 ---
 
@@ -246,7 +213,6 @@ hole_play_moves
 ### Before any change
 1. Read this file in full.
 2. Identify which requirement IDs are affected.
-3. Note whether the change targets `reboot/` or legacy root.
 
 ### After any change
 1. Update affected requirement rows or add new IDs.
@@ -258,4 +224,8 @@ hole_play_moves
 
 | Date | Change |
 |------|--------|
+| 2026-08-29 | Fix gameplay, mobile UI, save play, and landing highlights; remove unused datastar dependency. |
+| 2026-08-29 | Fix save play: hole save uses urlencoded form; server auto-creates/finds hole before saving replay (UR-A06). |
+| 2026-08-29 | Mobile: full-height map, compact bottom controls, hamburger nav on all pages (`nav.js`). |
+| 2026-08-29 | Full rewrite to Rust + Axum + Askama SSR; removed Vue/Python/SvelteKit stacks. |
 | 2026-08-29 | Initial requirements derived from full codebase audit (reboot + legacy SvelteKit). |

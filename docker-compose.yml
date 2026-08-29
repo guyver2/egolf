@@ -1,0 +1,16 @@
+services:
+  egolf:
+    build: .
+    ports:
+      - "${PORT:-8080}:8080"
+    environment:
+      - DATABASE_PATH=/data/egolf.db
+      - TERRAIN_CACHE_DIR=/data/terrain_cache
+      - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
+      - REGISTRATION_ENABLED=${REGISTRATION_ENABLED:-true}
+    volumes:
+      - db-data:/data
+    restart: unless-stopped
+
+volumes:
+  db-data:

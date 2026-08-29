@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ hole.name }} — Replays</title>
+  <link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+  {% include "nav.html" %}
+  <div class="page-container list-page">
+    <div class="header">
+      <h1>{{ hole.name }} — Best Replays</h1>
+      <p class="hole-meta">{{ hole.width }}x{{ hole.height }} · Seed {{ formatted_seed }}
+        {% if let Some(author) = hole.author_name %} · by {{ author }}{% endif %}
+      </p>
+      <p class="total-count">{{ total }} replay{% if total != 1 %}s{% endif %}</p>
+    </div>
+    {% if rows.is_empty() %}
+    <p class="empty">No replays recorded for this hole yet.</p>
+    {% else %}
+    <div class="replays-list">
+      {% for row in rows %}
+      <div class="replay-row">
+        <span class="rank">#{{ row.rank }}</span>
+        <span class="player">{% if let Some(name) = row.play.user_name %}{{ name }}{% else %}Unknown{% endif %}</span>
+        <span class="strokes">{{ row.play.strokes }} stroke{% if row.play.strokes != 1 %}s{% endif %}</span>
+        <span class="date">{{ row.play.created_at }}</span>
+        <a href="/replay/{{ row.play.id }}" class="watch-btn">Watch</a>
+      </div>
+      {% endfor %}
+    </div>
+    {% if total_pages > 1 %}
+    <div class="pagination">
+      {% if page > 0 %}<a href="/holes/{{ hole.id }}/replays?page={{ page - 1 }}" class="button">Previous</a>{% else %}<span class="button disabled">Previous</span>{% endif %}
+      <span>Page {{ page + 1 }} of {{ total_pages }}</span>
+      {% if page + 1 < total_pages %}<a href="/holes/{{ hole.id }}/replays?page={{ page + 1 }}" class="button">Next</a>{% else %}<span class="button disabled">Next</span>{% endif %}
+    </div>
+    {% endif %}
+    {% endif %}
+  </div>
+</body>
+</html>

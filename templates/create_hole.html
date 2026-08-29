@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create a Hole — Pixel Golf</title>
+  <link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+  {% include "nav.html" %}
+  <div class="page-container list-page">
+    <h1>Create a Hole</h1>
+    <div class="create-layout">
+      <div class="preview-area">
+        <img src="{{ preview_url }}" alt="Terrain preview" class="terrain-preview" loading="eager">
+        <p class="preview-label">{{ width }}x{{ height }} · {{ formatted_seed }}</p>
+      </div>
+      <form class="form-area" method="post" action="/create-hole">
+        <div class="field">
+          <label for="hole-name">Name</label>
+          <input id="hole-name" name="name" type="text" value="{{ name }}" placeholder="e.g. Windy Shores" maxlength="200">
+        </div>
+        <div class="field">
+          <label for="hole-seed">Seed</label>
+          <div class="seed-row">
+            <input id="hole-seed" name="seed" type="text" value="{{ seed }}" maxlength="8">
+            <button class="btn btn-small" type="button" onclick="randomizeSeed()">Random</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="hole-width">Width ({{ width }})</label>
+          <input id="hole-width" name="width" type="range" min="5" max="30" value="{{ width }}" onchange="updatePreview()">
+        </div>
+        <div class="field">
+          <label for="hole-height">Height ({{ height }})</label>
+          <input id="hole-height" name="height" type="range" min="5" max="40" value="{{ height }}" onchange="updatePreview()">
+        </div>
+        <button class="btn btn-primary" type="submit">Save &amp; Play</button>
+        {% if let Some(err) = error %}<p class="error">{{ err }}</p>{% endif %}
+      </form>
+    </div>
+  </div>
+  <script>
+    function updatePreview() {
+      const seed = document.getElementById('hole-seed').value.replace(/[^a-zA-Z0-9]/g,'0').slice(0,8).padEnd(8,'0');
+      const w = document.getElementById('hole-width').value;
+      const h = document.getElementById('hole-height').value;
+      document.querySelector('.terrain-preview').src = `/terrain/preview/draft?seed=${seed}&width=${w}&height=${h}&_=${Date.now()}`;
+    }
+    function randomizeSeed() {
+      const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+      let s = '';
+      for (let i = 0; i < 8; i++) s += chars[Math.floor(Math.random() * chars.length)];
+      document.getElementById('hole-seed').value = s;
+      updatePreview();
+    }
+  </script>
+</body>
+</html>
