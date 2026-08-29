@@ -1,0 +1,30 @@
+---
+description: Read and maintain REQUIREMENTS.md before and after every project change
+alwaysApply: true
+---
+
+# Requirements maintenance
+
+This project keeps a living requirements spec at `REQUIREMENTS.md`.
+
+## Before making changes
+
+1. Read `REQUIREMENTS.md` to understand current user and system requirements.
+2. Identify which requirement IDs (UR-*, SR-*, NFR-*) your work affects.
+
+## After making changes
+
+Update `REQUIREMENTS.md` whenever you:
+
+- Add, remove, or change user-visible behaviour
+- Add, remove, or change API endpoints, routes, or data models
+- Change deployment, env vars, or build/run scripts
+- Close or introduce a known gap listed in §5
+
+When updating:
+
+1. Edit the affected requirement rows or add new IDs.
+2. Refresh the **Last updated** date and add a **Changelog** entry.
+3. Move items between §2–§4 and §5 if scope changes.
+
+Do not skip this step — the file is the source of truth for what the game must do.

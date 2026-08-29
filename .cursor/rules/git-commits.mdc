@@ -1,0 +1,11 @@
+---
+description: Never add co-author trailers to git commits
+alwaysApply: true
+---
+
+# Git commits
+
+When creating commits:
+
+- **Never** add `Co-authored-by:` trailers (or any other co-author attribution) to commit messages.
+- Commits must have a single author only — the user who is committing.
