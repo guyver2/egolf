@@ -511,17 +511,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "datastar"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "99474d2278201b9faf0bb49d5cdb2e0542a4f2fd6050035d13116a0796e93a96"
-dependencies = [
- "axum",
- "serde",
- "serde_json",
-]
-
-[[package]]
 name = "deranged"
 version = "0.5.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -544,7 +533,6 @@ dependencies = [
  "bcrypt",
  "chrono",
  "cookie",
- "datastar",
  "dotenvy",
  "image",
  "jsonwebtoken",

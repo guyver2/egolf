@@ -2,7 +2,7 @@
 
 > **Living document.** Read this file before making any change to the project. Update it after every modification that adds, removes, or alters behaviour, APIs, data models, or deployment.
 
-Last updated: 2026-08-29 (Rust rewrite)
+Last updated: 2026-08-29 (save play fix)
 
 ## 1. Product overview
 
@@ -26,7 +26,7 @@ eGolf is a digital adaptation of [Paper Apps Golf](https://gladdendesign.com/pro
 | UR-G06 | **Terrain type on the landing tile** determines the die for the *next* roll: **fairway → D8 (1–8)**, **grass → D6 (1–6)**, **sand → D2 (1–2)**. |
 | UR-G07 | The player may use a **Putt** action for a **guaranteed roll of 1** (same flow as a normal roll). |
 | UR-G08 | While a roll is unresolved (landing positions shown), the die is **locked**; it unlocks after a valid move. |
-| UR-G09 | If a roll yields **no valid landing positions**, the stroke is **counted as wasted**, the player is prompted to roll again, and the die unlocks (`reboot` only). |
+| UR-G09 | If a roll yields **no valid landing positions**, the stroke is **counted as wasted**, the player is prompted to roll again, and the die unlocks. |
 | UR-G10 | The hole is **won** when the ball reaches the hole tile. A congratulations overlay shows **stroke count** and **par**. |
 | UR-G11 | **Par** is displayed during play and equals `floor(height / 5) + 1`. |
 | UR-G12 | **Distance** (Manhattan) to the hole is displayed during play. |
@@ -79,8 +79,8 @@ eGolf is a digital adaptation of [Paper Apps Golf](https://gladdendesign.com/pro
 | ID | Requirement |
 |----|-------------|
 | UR-N01 | A fixed **top navigation bar** shows: logo/home, Holes, Create (auth), Profile (auth), Login/Sign Up or Logout. |
-| UR-N02 | On viewports ≤768px, navigation collapses to a **hamburger menu**. |
-| UR-N03 | Game controls sit in a **side panel** on desktop and a **fixed bottom bar** on mobile. |
+| UR-N02 | On viewports ≤768px, navigation collapses to a **hamburger menu** (toggle via `assets/nav.js` on all pages). |
+| UR-N03 | Game controls sit in a **side panel** on desktop and a **compact fixed bottom bar** on mobile; seed/actions open via **⋯** toggle. |
 | UR-N04 | The UI uses a **dark theme** throughout. |
 
 ---
@@ -205,7 +205,6 @@ hole_play_moves
 - **Hole deletion / editing**: not implemented.
 - **Play deletion**: not implemented.
 - **User profile editing**: not implemented.
-- **Datastar SSE**: planned for interactive updates; current UI uses SSR + vanilla JS.
 
 ---
 
@@ -225,5 +224,8 @@ hole_play_moves
 
 | Date | Change |
 |------|--------|
+| 2026-08-29 | Fix gameplay, mobile UI, save play, and landing highlights; remove unused datastar dependency. |
+| 2026-08-29 | Fix save play: hole save uses urlencoded form; server auto-creates/finds hole before saving replay (UR-A06). |
+| 2026-08-29 | Mobile: full-height map, compact bottom controls, hamburger nav on all pages (`nav.js`). |
 | 2026-08-29 | Full rewrite to Rust + Axum + Askama SSR; removed Vue/Python/SvelteKit stacks. |
 | 2026-08-29 | Initial requirements derived from full codebase audit (reboot + legacy SvelteKit). |

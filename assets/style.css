@@ -31,23 +31,43 @@
 .hamburger {
   display: none;
   flex-direction: column;
+  justify-content: center;
   gap: 5px;
-  width: 36px; height: 36px;
-  background: transparent; border: none; cursor: pointer; padding: 6px;
+  width: 40px; height: 40px;
+  background: transparent; border: none; cursor: pointer; padding: 8px;
+  flex-shrink: 0;
 }
-.hamburger span { display: block; width: 100%; height: 2px; background: #fff; }
-.mobile-menu { display: none; position: fixed; top: 56px; left: 0; right: 0; background: rgba(0,0,0,0.5); z-index: 999; }
-.mobile-menu-content { background: #272727; display: flex; flex-direction: column; padding: 0.5rem 0; }
+.hamburger span {
+  display: block; width: 100%; height: 2px; background: #fff;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+.hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger.open span:nth-child(2) { opacity: 0; }
+.hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+.mobile-menu {
+  position: fixed;
+  top: 56px;
+  left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 999;
+  flex-direction: column;
+}
+.mobile-menu[hidden] { display: none !important; }
+.mobile-menu-content { background: #272727; display: flex; flex-direction: column; padding: 0.5rem 0; box-shadow: 0 8px 24px rgba(0,0,0,0.35); }
 .mobile-link { color: #ddd; padding: 0.9rem 1.5rem; text-decoration: none; border: none; background: none; text-align: left; font-size: 1.05rem; cursor: pointer; width: 100%; }
 .mobile-link.highlight { color: #7c7; }
 .mobile-divider { border: none; border-top: 1px solid #444; margin: 0.25rem 1.25rem; }
 .logout-btn { color: #f77; }
 .desktop-only { display: flex; }
 .mobile-only { display: none !important; }
+body.nav-open { overflow: hidden; }
 @media (max-width: 768px) {
   .desktop-only { display: none !important; }
   .mobile-only { display: flex !important; }
   .hamburger { display: flex !important; }
+  .mobile-menu:not([hidden]) { display: flex !important; }
+  .nav-bar { padding: 0 0.75rem; }
+  .nav-bar h1 { font-size: 1.1rem; }
 }
 
 * { box-sizing: border-box; }
@@ -58,19 +78,52 @@ a { color: inherit; }
   margin-top: 56px;
   background: #1a1a1a;
   height: calc(100vh - 56px);
+  height: calc(100dvh - 56px);
   display: flex;
   overflow: hidden;
 }
-.content-wrapper { display: flex; gap: 12px; width: 100%; height: 100%; padding: 8px; }
-.map-container, .map-wrapper { flex: 1; min-width: 0; min-height: 0; display: flex; justify-content: center; align-items: center; position: relative; }
+.content-wrapper { display: flex; gap: 12px; width: 100%; height: 100%; min-height: 0; padding: 8px; }
+.map-container, .map-wrapper, .map-area {
+  flex: 1; min-width: 0; min-height: 0;
+  display: flex; justify-content: center; align-items: center;
+  position: relative; overflow: hidden;
+}
+#game-map-svg-host {
+  flex: 1;
+  align-self: stretch;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
 .controls-container {
   display: flex; flex-direction: column;
   background: #272727; gap: 10px; padding: 1rem;
   border-radius: 8px; width: 200px; flex-shrink: 0; align-self: flex-start;
 }
-.map { display: block; border: 2px solid #333; border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.5); max-width: 100%; max-height: 100%; }
+.controls-primary {
+  display: flex; flex-direction: column; gap: 10px;
+}
+.hole-info-panel { display: block; }
+.game-more-toggle {
+  display: none;
+  align-items: center; justify-content: center;
+  width: 40px; height: 40px;
+  border: 1px solid #555; border-radius: 8px;
+  background: #333; color: #fff; font-size: 1.4rem; line-height: 1;
+  cursor: pointer; flex-shrink: 0;
+}
+.map {
+  display: block; border: 2px solid #333; border-radius: 4px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  width: 100%; height: 100%;
+  max-width: 100%; max-height: 100%;
+}
 .map.finished { filter: blur(3px); }
-.tile { cursor: pointer; }
+.tile { cursor: pointer; touch-action: manipulation; pointer-events: all; outline: none; -webkit-tap-highlight-color: transparent; }
 .tile.grass path { fill: #161; }
 .tile.water path { fill: #33f; }
 .tile.sand path { fill: #fa3; }
@@ -78,27 +131,37 @@ a { color: inherit; }
 .tile.tree path { fill: #666; }
 .tile.start path { fill: rgb(170,51,138); }
 .tile.hole path { fill: #111; }
-.ball { fill: #d6d6d6; }
-.tile:hover rect { fill: #444; }
-.tile.landing rect { fill: #f77; }
+.ball { fill: #d6d6d6; stroke: none; }
+.landing-overlay { fill: rgba(255, 80, 80, 0.4); pointer-events: none; }
+.tile.landing path:not(.landing-overlay) { stroke: #f55; stroke-width: 0.5; paint-order: stroke fill; }
 .overlay {
   position: absolute; inset: 0;
   background: rgba(0,0,0,0.3);
-  display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10;
+  display: none !important;
+  flex-direction: column; justify-content: center; align-items: center;
+  z-index: 20;
+  pointer-events: none;
+}
+.overlay.visible,
+#win-overlay.visible {
+  display: flex !important;
+  pointer-events: auto;
 }
 .overlay h1 { color: #ffeaea; font-size: clamp(1.5em,5vw,4em); text-align: center; }
 .stroke-count { color: #ccc; }
 .save-btn { margin-top: 1rem; background: #99a29b; color: #fff; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
-.saved-msg { color: #7c7; }
+.saved-msg:not([hidden]) { color: #7c7; }
+.save-error:not([hidden]) { color: #f77; text-align: center; margin-top: 0.5rem; }
 
 .dice-container { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 0.5rem; }
-.dice { width: clamp(50px,12vw,100px); height: clamp(50px,12vw,100px); cursor: pointer; }
+.dice { width: clamp(50px,12vw,100px); height: clamp(50px,12vw,100px); cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .dice.locked { cursor: not-allowed; }
 rect.D6 { fill: #161; stroke: #5a5a5a; stroke-width: 2; }
 rect.D2 { fill: #fa3; stroke: #5a5a5a; stroke-width: 2; }
 rect.D8 { fill: #3a3; stroke: #5a5a5a; stroke-width: 2; }
 .dice.locked rect { fill: #5a5a5a; }
-.putt-button { background: #88908a; color: #fff; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; min-width: 80px; }
+.putt-button { background: #88908a; color: #fff; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; min-width: 80px; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.dice.locked, .putt-button.locked { pointer-events: auto; }
 .putt-button.locked { background: #5a5a5a; cursor: not-allowed; }
 .no-moves { color: #f77; font-size: 0.85rem; }
 
@@ -164,20 +227,131 @@ rect.D8 { fill: #3a3; stroke: #5a5a5a; stroke-width: 2; }
 .hole-meta, .total-count { color: #999; font-size: 0.9rem; }
 
 @media (max-width: 768px) {
-  .content-wrapper { flex-direction: column; padding: 0; gap: 0; padding-bottom: 100px; }
-  .controls-container {
-    position: fixed; bottom: 0; left: 0; right: 0; width: 100%;
-    flex-direction: row; justify-content: space-around; align-items: center;
-    border-radius: 12px 12px 0 0; z-index: 100;
+  .replay-page {
+    margin-top: 56px;
+    padding: 0;
+    max-width: none;
+    height: calc(100dvh - 56px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
-  .dice-container { flex-direction: row; }
-  .map { border-radius: 0; border-left: none; border-right: none; }
+  .replay-page .replay-header {
+    margin: 0;
+    padding: 0.5rem 0.75rem;
+    flex-shrink: 0;
+  }
+  .replay-page .replay-header h2 { font-size: 1.1rem; margin: 0 0 0.2rem; }
+  .replay-page .meta { font-size: 0.8rem; }
+  .game-container {
+    height: calc(100dvh - 56px);
+  }
+  .content-wrapper {
+    flex-direction: column;
+    padding: 0;
+    gap: 0;
+    height: 100%;
+    min-height: 0;
+  }
+  .map-container, .map-wrapper, .map-area {
+    flex: 1 1 auto;
+    width: 100%;
+    min-height: 0;
+    align-items: stretch;
+    justify-content: stretch;
+    padding-bottom: var(--mobile-controls-height, 72px);
+  }
+  #game-map-svg-host {
+    width: 100%;
+    height: 100%;
+  }
+  .map {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    object-fit: contain;
+  }
+  .controls-container {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    width: 100%;
+    flex-direction: column;
+    gap: 0;
+    padding: 0.5rem 0.75rem calc(0.5rem + env(safe-area-inset-bottom, 0px));
+    border-radius: 12px 12px 0 0;
+    z-index: 100;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.35);
+  }
+  .controls-primary {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    width: 100%;
+  }
+  .dice-container {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0;
+    flex-shrink: 0;
+  }
+  .dice { width: 52px; height: 52px; }
+  .putt-button { padding: 8px 14px; min-width: 0; font-size: 0.9rem; }
+  .main-info {
+    display: flex;
+    flex: 1;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    min-width: 0;
+  }
+  .main-info p { margin: 0; white-space: nowrap; }
+  .game-more-toggle { display: flex !important; }
+  .hole-info-panel {
+    display: none;
+    width: 100%;
+    padding-top: 0.5rem;
+    border-top: 1px solid #444;
+    margin-top: 0.5rem;
+  }
+  .hole-info-panel.open { display: block; }
+  .seed-controls { gap: 0.5rem; }
+  .seed-line { font-size: 0.85rem; margin: 0; }
+  .no-moves {
+    position: absolute;
+    bottom: calc(100% + 0.25rem);
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    background: #272727;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+  }
+  .dice-container { position: relative; }
   .controls-panel {
     position: fixed; bottom: 0; left: 0; right: 0; width: 100%;
     flex-direction: row; flex-wrap: wrap; justify-content: center;
     border-radius: 12px 12px 0 0; z-index: 100;
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
   }
-  .replay-page .content-wrapper { flex-direction: column; }
+  .replay-page .content-wrapper {
+    flex-direction: column;
+    height: calc(100dvh - 56px - 4rem);
+    min-height: 0;
+    padding: 0;
+  }
+  .replay-page .map-area {
+    flex: 1;
+    min-height: 0;
+    padding-bottom: 120px;
+  }
+  .replay-page .controls-panel {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
 }
 @media (max-width: 600px) {
   .hole-card, .play-card { flex-wrap: wrap; }

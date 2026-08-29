@@ -1,6 +1,11 @@
 /target/
 **/*.rs.bk
 egolf.db
+egolf.db-shm
+egolf.db-wal
 terrain_cache/
+node_modules/
 .env
 !.env.example
+*.png
+!assets/**

@@ -13,7 +13,7 @@ use crate::preview::{render_draft_png, save_terrain_thumbnail};
 use crate::render::render;
 use crate::state::AppState;
 use crate::store::{
-    create_hole, create_hole_play, get_hole, get_hole_play, hole_exists, list_hole_plays,
+    create_hole, create_hole_play, ensure_hole, get_hole, get_hole_play, hole_exists, list_hole_plays,
     list_holes, pages, random_seed, sanitise_seed, format_seed,
 };
 use crate::templates::{
@@ -67,7 +67,9 @@ pub struct SaveHoleForm {
 
 #[derive(Deserialize)]
 pub struct SavePlayForm {
+    #[serde(default)]
     pub hole_id: i64,
+    pub hole: Option<SaveHoleForm>,
     pub moves: Vec<MoveForm>,
 }
 
@@ -428,13 +430,10 @@ pub async fn save_hole(
         .name
         .filter(|n| !n.trim().is_empty())
         .unwrap_or_else(|| format!("Hole {seed}"));
-    if hole_exists(&state.pool, &seed, form.width, form.height).unwrap_or(false) {
-        return StatusCode::CONFLICT.into_response();
-    }
-    match create_hole(&state.pool, &name, &seed, form.width, form.height, user.id) {
-        Ok(hole) => {
+    match ensure_hole(&state.pool, &name, &seed, form.width, form.height, user.id) {
+        Ok(id) => {
             let _ = save_terrain_thumbnail(state.terrain_cache_dir(), &seed, form.width, form.height);
-            axum::Json(serde_json::json!({ "id": hole.id })).into_response()
+            axum::Json(serde_json::json!({ "id": id })).into_response()
         }
         Err(_) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     }
@@ -465,13 +464,34 @@ pub async fn save_play(
         Some(u) => u,
         None => return StatusCode::UNAUTHORIZED.into_response(),
     };
+    let hole_id = if form.hole_id > 0 && get_hole(&state.pool, form.hole_id).is_ok() {
+        form.hole_id
+    } else if let Some(hole) = form.hole {
+        let seed = sanitise_seed(&hole.seed);
+        let name = hole
+            .name
+            .filter(|n| !n.trim().is_empty())
+            .unwrap_or_else(|| format!("Hole {seed}"));
+        match ensure_hole(&state.pool, &name, &seed, hole.width, hole.height, user.id) {
+            Ok(id) => {
+                let _ = save_terrain_thumbnail(state.terrain_cache_dir(), &seed, hole.width, hole.height);
+                id
+            }
+            Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+        }
+    } else {
+        return StatusCode::BAD_REQUEST.into_response();
+    };
     let moves: Vec<(i32, i32, i32, i32)> = form
         .moves
         .iter()
         .map(|m| (m.from_x, m.from_y, m.to_x, m.to_y))
         .collect();
-    match create_hole_play(&state.pool, form.hole_id, user.id, &moves) {
-        Ok(play) => axum::Json(serde_json::json!({ "id": play.id })).into_response(),
+    if moves.is_empty() {
+        return StatusCode::BAD_REQUEST.into_response();
+    }
+    match create_hole_play(&state.pool, hole_id, user.id, &moves) {
+        Ok(id) => axum::Json(serde_json::json!({ "id": id, "hole_id": hole_id })).into_response(),
         Err(_) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     }
 }

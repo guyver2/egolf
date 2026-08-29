@@ -4,8 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ title }} — Pixel Golf</title>
-  <link rel="stylesheet" href="/assets/style.css">
-  <script type="module" src="https://cdn.jsdelivr.net/gh/starfederation/datastar@main/bundles/datastar.js"></script>
+  <link rel="stylesheet" href="/assets/style.css?v=5">
 </head>
 <body>
   {% include "nav.html" %}
@@ -16,41 +15,35 @@
        data-user-logged-in="{% if user_logged_in %}true{% else %}false{% endif %}">
     <div class="content-wrapper">
       <div class="map-container map-wrapper" id="game-map-container">
-        <svg class="map" id="game-map" viewBox="0 0 {{ terrain.width * 10 }} {{ terrain.height * 10 }}" preserveAspectRatio="xMidYMid meet">
-          {% for t in tiles %}
-          <g transform="translate({{ t.col * 10 }} {{ t.row * 10 }})"
-             class="tile {{ t.class }}{% if t.is_hole %} hole{% endif %}{% if t.is_start %} start{% endif %}"
-             data-col="{{ t.col }}" data-row="{{ t.row }}" role="button" tabindex="0">
-            <rect x="0" y="0" width="10" height="10" fill="#272727"/>
-            <path d="M 2.5 0.5 H 7.5 A 2 2 0 0 1 9.5 2.5 V 7.5 A 2 2 0 0 1 7.5 9.5 H 2.5 A 2 2 0 0 1 0.5 7.5 V 2.5 A 2 2 0 0 1 2.5 0.5"/>
-            {% if t.is_ball %}<circle cx="5" cy="5" r="2.5" class="ball" stroke="#666" stroke-width="0.5"/>{% endif %}
-          </g>
-          {% endfor %}
-        </svg>
-        <div class="overlay" id="win-overlay" hidden>
+        <div id="game-map-svg-host"></div>
+        <div class="overlay" id="win-overlay" hidden aria-hidden="true">
           <h1>Congratulations!</h1>
           <p class="stroke-count" id="stroke-count"></p>
           {% if user_logged_in %}
           <button class="save-btn" id="save-play-btn" type="button">Save Play</button>
           <p class="saved-msg" id="saved-msg" hidden>Play saved!</p>
+          <p class="save-error" id="save-error" hidden></p>
           {% endif %}
         </div>
       </div>
       <div class="controls-container" id="game-controls">
-        <div class="dice-container">
-          <svg class="dice" id="dice" width="100" height="100" viewBox="0 0 100 100" role="button" tabindex="0" aria-label="Roll dice">
-            <rect id="dice-rect" class="D8" x="10" y="10" width="80" height="80" rx="10"/>
-            <g id="dice-dots"></g>
-          </svg>
-          <button class="putt-button" id="putt-btn" type="button">Putt</button>
-          <p class="no-moves" id="no-moves" hidden>No moves! Roll again.</p>
-        </div>
-        <div class="hole-info-container">
+        <div class="controls-primary">
+          <div class="dice-container">
+            <svg class="dice" id="dice" width="100" height="100" viewBox="0 0 100 100" role="button" tabindex="0" aria-label="Roll dice">
+              <rect id="dice-rect" class="D8" x="10" y="10" width="80" height="80" rx="10"/>
+              <g id="dice-dots"></g>
+            </svg>
+            <button class="putt-button" id="putt-btn" type="button">Putt</button>
+            <p class="no-moves" id="no-moves" hidden>No moves! Roll again.</p>
+          </div>
           <div class="main-info">
             <p>Par: <span id="info-par">{{ terrain.par }}</span></p>
             <p>Strokes: <span id="info-strokes">0</span></p>
             <p>Dist: <span id="info-dist">{{ dist }}</span></p>
           </div>
+          <button type="button" class="game-more-toggle mobile-only" id="game-more-toggle" aria-expanded="false" aria-controls="hole-info-panel" aria-label="Hole options">⋯</button>
+        </div>
+        <div class="hole-info-panel" id="hole-info-panel">
           <div class="seed-controls">
             <p class="seed-line">Seed: <span id="seed-display">{{ formatted_seed }}</span></p>
             <div class="button-group">
@@ -63,6 +56,6 @@
       </div>
     </div>
   </div>
-  <script src="/assets/game.js"></script>
+  <script src="/assets/game.js?v=14"></script>
 </body>
 </html>

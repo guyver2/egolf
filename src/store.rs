@@ -60,6 +60,34 @@ pub fn hole_exists(pool: &DbPool, seed: &str, width: i32, height: i32) -> anyhow
     Ok(count > 0)
 }
 
+pub fn find_hole_id(pool: &DbPool, seed: &str, width: i32, height: i32) -> anyhow::Result<Option<i64>> {
+    let conn = pool.get()?;
+    let id: Result<i64, _> = conn.query_row(
+        "SELECT id FROM holes WHERE seed = ?1 AND width = ?2 AND height = ?3",
+        rusqlite::params![seed, width, height],
+        |r| r.get(0),
+    );
+    match id {
+        Ok(id) => Ok(Some(id)),
+        Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
+        Err(e) => Err(e.into()),
+    }
+}
+
+pub fn ensure_hole(
+    pool: &DbPool,
+    name: &str,
+    seed: &str,
+    width: i32,
+    height: i32,
+    author_id: i64,
+) -> anyhow::Result<i64> {
+    if let Some(id) = find_hole_id(pool, seed, width, height)? {
+        return Ok(id);
+    }
+    Ok(create_hole(pool, name, seed, width, height, author_id)?.id)
+}
+
 pub fn list_hole_plays(
     pool: &DbPool,
     page: i32,
@@ -217,7 +245,7 @@ pub fn create_hole_play(
     hole_id: i64,
     user_id: i64,
     moves: &[(i32, i32, i32, i32)],
-) -> anyhow::Result<HolePlay> {
+) -> anyhow::Result<i64> {
     let conn = pool.get()?;
     let strokes = moves.len() as i32;
     conn.execute(
@@ -232,7 +260,7 @@ pub fn create_hole_play(
             rusqlite::params![play_id, i as i32, fx, fy, tx, ty],
         )?;
     }
-    get_hole_play(pool, play_id)
+    Ok(play_id)
 }
 
 fn map_hole_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<Hole> {
